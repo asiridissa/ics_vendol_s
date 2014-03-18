@@ -231,7 +231,7 @@ END.
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL btnDelAll C-Win
 ON CHOOSE OF btnDelAll IN FRAME DEFAULT-FRAME /* Clean */
 DO:
-    IF session_User = "asiri" THEN
+    IF session_User = "asiri" OR session_User = "admin" THEN
     DO:
         MESSAGE "Confirm to del all?" VIEW-AS ALERT-BOX INFO BUTTONS YES-NO UPDATE yn AS LOGICAL.
         IF yn THEN

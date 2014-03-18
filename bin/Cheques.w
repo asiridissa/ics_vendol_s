@@ -16,7 +16,8 @@ DEFINE VARIABLE calendr3 AS COM-HANDLE   NO-UNDO.
     DEFINE VARIABLE tempDate AS DATE        NO-UNDO.
 
 DEFINE TEMP-TABLE tt-chqBills
-    FIELD bill#        AS INTEGER LABEL "   Bill No        "
+    FIELD bill#        AS INTEGER LABEL "   Bill #        "
+    FIELD billNo        AS INTEGER LABEL "   Bill No        "
     FIELD billDate     AS DATE    LABEL " Bill Date "  
     FIELD tol          AS DECIMAL LABEL "       Total        "
     FIELD creditAmount AS DECIMAL LABEL "       To Collect   "
@@ -56,7 +57,7 @@ cheques.crDate customer.CusArea
 
 
 /* Definitions for BROWSE brwCreditAmounts                              */
-&Scoped-define FIELDS-IN-QUERY-brwCreditAmounts tt-chqBills.bill# tt-chqBills.billDate tt-chqBills.tol tt-chqBills.creditAmount tt-chqBills.debitAmount   
+&Scoped-define FIELDS-IN-QUERY-brwCreditAmounts tt-chqBills.billNo tt-chqBills.billDate tt-chqBills.tol tt-chqBills.creditAmount tt-chqBills.debitAmount   
 &Scoped-define ENABLED-FIELDS-IN-QUERY-brwCreditAmounts   
 &Scoped-define SELF-NAME brwCreditAmounts
 &Scoped-define QUERY-STRING-brwCreditAmounts FOR EACH tt-chqBills BY tt-chqBills.billDate
@@ -71,11 +72,11 @@ cheques.crDate customer.CusArea
     ~{&OPEN-QUERY-brwCreditAmounts}
 
 /* Standard List Definitions                                            */
-&Scoped-Define ENABLED-OBJECTS btnSearch filSearch btnGo radFilter ~
-brwCheques brwCreditAmounts btnAdd btnMod btnClose 
-&Scoped-Define DISPLAYED-OBJECTS filSearch cmbSearchCol cmbSearchArea ~
-cmbSearchTime radFilter filID filBIll# cmbArea cmbCus filTotal filToCollect ~
-filChqNo filUnDedicated filChqAmount filAmount filBank filBranch radStat 
+&Scoped-Define ENABLED-OBJECTS radFilter brwCheques brwCreditAmounts btnGo ~
+filSearch btnAdd btnSearch btnMod btnClose RECT-5 RECT-6 RECT-21 
+&Scoped-Define DISPLAYED-OBJECTS filBIllId radFilter filID filBIll# cmbArea ~
+cmbCus filChqNo filToCollect filChqAmount filSearch filUnDedicated filBank ~
+cmbSearchCol filAmount cmbSearchArea filBranch cmbSearchTime radStat 
 
 /* Custom List Definitions                                              */
 /* List-1,List-2,List-3,List-4,List-5,List-6                            */
@@ -93,8 +94,6 @@ DEFINE VAR C-Win AS WIDGET-HANDLE NO-UNDO.
 /* Definitions of handles for OCX Containers                            */
 DEFINE VARIABLE CtrlFrame-2 AS WIDGET-HANDLE NO-UNDO.
 DEFINE VARIABLE chCtrlFrame-2 AS COMPONENT-HANDLE NO-UNDO.
-DEFINE VARIABLE CtrlFrame-3 AS WIDGET-HANDLE NO-UNDO.
-DEFINE VARIABLE chCtrlFrame-3 AS COMPONENT-HANDLE NO-UNDO.
 DEFINE VARIABLE CtrlFrame-4 AS WIDGET-HANDLE NO-UNDO.
 DEFINE VARIABLE chCtrlFrame-4 AS COMPONENT-HANDLE NO-UNDO.
 
@@ -116,20 +115,20 @@ DEFINE BUTTON btnDel
      SIZE 15 BY 1.
 
 DEFINE BUTTON btnDoPay 
-     LABEL "Pament" 
-     SIZE 14 BY 1.
+     LABEL "Select Bill" 
+     SIZE 15 BY 1.
 
 DEFINE BUTTON btnGo 
      LABEL "Go" 
      SIZE 5.86 BY 1.
 
 DEFINE BUTTON btnMod 
-     LABEL "Modify" 
+     LABEL "Modify / Pay" 
      SIZE 15 BY 1.
 
 DEFINE BUTTON btnPay 
-     LABEL "Pay >>" 
-     SIZE 14 BY 1.
+     LABEL "Allocate amount" 
+     SIZE 15 BY 1.
 
 DEFINE BUTTON btnReturned 
      LABEL "Return" 
@@ -189,7 +188,7 @@ DEFINE VARIABLE cmbSearchTime AS INTEGER FORMAT ">>>,>>9":U INITIAL 0
 DEFINE VARIABLE filAmount AS DECIMAL FORMAT ">>>,>>>,>>9.99":U INITIAL 0 
      LABEL "Pay" 
      VIEW-AS FILL-IN 
-     SIZE 14 BY .88
+     SIZE 15 BY .88
      BGCOLOR 15 FGCOLOR 1  NO-UNDO.
 
 DEFINE VARIABLE filBank AS CHARACTER FORMAT "X(50)":U 
@@ -200,6 +199,12 @@ DEFINE VARIABLE filBank AS CHARACTER FORMAT "X(50)":U
 
 DEFINE VARIABLE filBIll# AS INTEGER FORMAT ">>>>>>>>>9":U INITIAL 0 
      LABEL "Bill No" 
+     VIEW-AS FILL-IN 
+     SIZE 14 BY .88
+     BGCOLOR 7 FGCOLOR 11  NO-UNDO.
+
+DEFINE VARIABLE filBIllId AS INTEGER FORMAT ">>>>>>>9":U INITIAL 0 
+     LABEL "ID" 
      VIEW-AS FILL-IN 
      SIZE 14 BY .88
      BGCOLOR 7 FGCOLOR 11  NO-UNDO.
@@ -239,17 +244,11 @@ DEFINE VARIABLE filToCollect AS DECIMAL FORMAT ">>>,>>>,>>9.99":U INITIAL 0
      SIZE 14 BY .88
      BGCOLOR 15 FGCOLOR 12  NO-UNDO.
 
-DEFINE VARIABLE filTotal AS DECIMAL FORMAT ">>>,>>>,>>9.99":U INITIAL 0 
-     LABEL "Total" 
-     VIEW-AS FILL-IN 
-     SIZE 14 BY .88
-     BGCOLOR 7 FGCOLOR 11  NO-UNDO.
-
 DEFINE VARIABLE filUnDedicated AS DECIMAL FORMAT ">>>,>>>,>>9.99":U INITIAL 0 
      LABEL "Available" 
      VIEW-AS FILL-IN 
      SIZE 14 BY .88
-     BGCOLOR 15 FGCOLOR 1  NO-UNDO.
+     BGCOLOR 15 FGCOLOR 2  NO-UNDO.
 
 DEFINE VARIABLE radFilter AS INTEGER 
      VIEW-AS RADIO-SET HORIZONTAL
@@ -257,7 +256,7 @@ DEFINE VARIABLE radFilter AS INTEGER
           "All", 1,
 "Today", 2,
 "Chq Date :", 3
-     SIZE 23.57 BY .88 NO-UNDO.
+     SIZE 23.57 BY 1 NO-UNDO.
 
 DEFINE VARIABLE radStat AS CHARACTER INITIAL "P" 
      VIEW-AS RADIO-SET HORIZONTAL
@@ -265,8 +264,20 @@ DEFINE VARIABLE radStat AS CHARACTER INITIAL "P"
           "Pending", "P",
 "Banked", "B",
 "Cleared", "C",
-"Returned", "R"
-     SIZE 38 BY .73 NO-UNDO.
+"Bounced", "R"
+     SIZE 36.14 BY .73 NO-UNDO.
+
+DEFINE RECTANGLE RECT-21
+     EDGE-PIXELS 2 GRAPHIC-EDGE  NO-FILL  GROUP-BOX  ROUNDED 
+     SIZE 30 BY 3.62.
+
+DEFINE RECTANGLE RECT-5
+     EDGE-PIXELS 2 GRAPHIC-EDGE  NO-FILL  GROUP-BOX  ROUNDED 
+     SIZE 95.43 BY 7.81.
+
+DEFINE RECTANGLE RECT-6
+     EDGE-PIXELS 2 GRAPHIC-EDGE  NO-FILL  GROUP-BOX  ROUNDED 
+     SIZE 48.29 BY 7.81.
 
 /* Query definitions                                                    */
 &ANALYZE-SUSPEND
@@ -304,14 +315,14 @@ DEFINE BROWSE brwCheques
 DEFINE BROWSE brwCreditAmounts
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS brwCreditAmounts C-Win _FREEFORM
   QUERY brwCreditAmounts DISPLAY
-      tt-chqBills.bill# FORMAT ">>>>>>>9":U
+      tt-chqBills.billNo FORMAT ">>>>>>>9":U
  tt-chqBills.billDate FORMAT "99/99/9999":U
  tt-chqBills.tol FORMAT ">>>,>>>,>>>,>>9.99":U
  tt-chqBills.creditAmount FORMAT ">>>,>>>,>>>,>>9.99":U
  tt-chqBills.debitAmount FORMAT ">>>,>>>,>>>,>>9.99":U
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
-    WITH NO-ROW-MARKERS SEPARATORS SIZE 69 BY 7.27
+    WITH NO-ROW-MARKERS SEPARATORS SIZE 69 BY 7.77
          FONT 10
          TITLE "Pending Bills of the Customer" ROW-HEIGHT-CHARS .55 FIT-LAST-COLUMN.
 
@@ -319,31 +330,31 @@ DEFINE BROWSE brwCreditAmounts
 /* ************************  Frame Definitions  *********************** */
 
 DEFINE FRAME DEFAULT-FRAME
-     btnSearch AT ROW 1.08 COL 136.43 WIDGET-ID 134 NO-TAB-STOP 
-     filSearch AT ROW 1.15 COL 60.57 COLON-ALIGNED WIDGET-ID 160 NO-TAB-STOP 
-     cmbSearchCol AT ROW 1.15 COL 85.86 COLON-ALIGNED NO-LABEL WIDGET-ID 136 NO-TAB-STOP 
-     cmbSearchArea AT ROW 1.15 COL 103.86 COLON-ALIGNED WIDGET-ID 156 NO-TAB-STOP 
-     cmbSearchTime AT ROW 1.15 COL 122 COLON-ALIGNED WIDGET-ID 158 NO-TAB-STOP 
-     btnGo AT ROW 1.19 COL 48.29 WIDGET-ID 166 NO-TAB-STOP 
+     filBIllId AT ROW 18 COL 58.43 COLON-ALIGNED WIDGET-ID 178 NO-TAB-STOP 
      radFilter AT ROW 1.23 COL 7.43 NO-LABEL WIDGET-ID 128
-     brwCheques AT ROW 2.35 COL 1 WIDGET-ID 200
-     filID AT ROW 18.23 COL 8.86 COLON-ALIGNED WIDGET-ID 2
-     brwCreditAmounts AT ROW 18.31 COL 75.72 WIDGET-ID 300
-     filBIll# AT ROW 18.35 COL 58.86 COLON-ALIGNED WIDGET-ID 108
-     cmbArea AT ROW 19.15 COL 8.86 COLON-ALIGNED WIDGET-ID 80
-     cmbCus AT ROW 20.12 COL 8.86 COLON-ALIGNED WIDGET-ID 92
-     filTotal AT ROW 20.15 COL 58.86 COLON-ALIGNED WIDGET-ID 110
-     filToCollect AT ROW 21.04 COL 58.86 COLON-ALIGNED WIDGET-ID 114
-     filChqNo AT ROW 21.08 COL 9.14 COLON-ALIGNED WIDGET-ID 94
-     filUnDedicated AT ROW 22 COL 58.86 COLON-ALIGNED WIDGET-ID 122
-     filChqAmount AT ROW 22.04 COL 8.86 COLON-ALIGNED WIDGET-ID 96
-     filAmount AT ROW 22.96 COL 58.86 COLON-ALIGNED WIDGET-ID 116
-     filBank AT ROW 23 COL 8.86 COLON-ALIGNED WIDGET-ID 98
-     btnDoPay AT ROW 23.92 COL 46.86 WIDGET-ID 120
-     btnPay AT ROW 23.92 COL 60.86 WIDGET-ID 118
-     filBranch AT ROW 23.96 COL 8.86 COLON-ALIGNED WIDGET-ID 100
-     radStat AT ROW 24.92 COL 10.86 NO-LABEL WIDGET-ID 102
+     brwCheques AT ROW 2.35 COL 1.14 WIDGET-ID 200
+     brwCreditAmounts AT ROW 17.81 COL 76 WIDGET-ID 300
+     filID AT ROW 18.04 COL 10.86 COLON-ALIGNED WIDGET-ID 2
+     filBIll# AT ROW 18.96 COL 58.43 COLON-ALIGNED WIDGET-ID 108
+     cmbArea AT ROW 18.96 COL 10.86 COLON-ALIGNED WIDGET-ID 80
+     cmbCus AT ROW 19.92 COL 10.86 COLON-ALIGNED WIDGET-ID 92
+     btnGo AT ROW 1.23 COL 48.29 WIDGET-ID 166 NO-TAB-STOP 
+     filChqNo AT ROW 20.88 COL 10.86 COLON-ALIGNED WIDGET-ID 94
+     filToCollect AT ROW 19.96 COL 58.43 COLON-ALIGNED WIDGET-ID 114
+     filChqAmount AT ROW 21.85 COL 10.86 COLON-ALIGNED WIDGET-ID 96
+     filSearch AT ROW 1.23 COL 60.57 COLON-ALIGNED WIDGET-ID 160 NO-TAB-STOP 
+     filUnDedicated AT ROW 20.96 COL 58.43 COLON-ALIGNED WIDGET-ID 122
+     filBank AT ROW 22.81 COL 10.86 COLON-ALIGNED WIDGET-ID 98
+     cmbSearchCol AT ROW 1.23 COL 85.86 COLON-ALIGNED NO-LABEL WIDGET-ID 136 NO-TAB-STOP 
+     filAmount AT ROW 23.31 COL 57.43 COLON-ALIGNED WIDGET-ID 116
+     cmbSearchArea AT ROW 1.23 COL 103.86 COLON-ALIGNED WIDGET-ID 156 NO-TAB-STOP 
+     filBranch AT ROW 23.77 COL 10.86 COLON-ALIGNED WIDGET-ID 100
+     btnDoPay AT ROW 22.19 COL 59.57 WIDGET-ID 120
+     cmbSearchTime AT ROW 1.23 COL 122 COLON-ALIGNED WIDGET-ID 158 NO-TAB-STOP 
+     btnPay AT ROW 24.35 COL 59.57 WIDGET-ID 118
+     radStat AT ROW 24.73 COL 12.14 NO-LABEL WIDGET-ID 102
      btnAdd AT ROW 26.12 COL 12.86 WIDGET-ID 30
+     btnSearch AT ROW 1.19 COL 136.43 WIDGET-ID 134 NO-TAB-STOP 
      btnMod AT ROW 26.12 COL 29.86 WIDGET-ID 32
      btnDel AT ROW 26.12 COL 46.86 WIDGET-ID 34
      btnReturned AT ROW 26.12 COL 63.86 WIDGET-ID 162
@@ -351,9 +362,12 @@ DEFINE FRAME DEFAULT-FRAME
      btnCancel AT ROW 26.12 COL 101.86 WIDGET-ID 36
      btnClose AT ROW 26.12 COL 118.86 WIDGET-ID 40
      "View :" VIEW-AS TEXT
-          SIZE 5.29 BY .58 AT ROW 1.35 COL 1.72 WIDGET-ID 132
+          SIZE 5.29 BY 1 AT ROW 1.23 COL 1.72 WIDGET-ID 132
      "Status:" VIEW-AS TEXT
-          SIZE 5.57 BY .62 AT ROW 25.04 COL 5 WIDGET-ID 106
+          SIZE 5.57 BY .62 AT ROW 24.77 COL 6.29 WIDGET-ID 106
+     RECT-5 AT ROW 17.81 COL 49.57 WIDGET-ID 168
+     RECT-6 AT ROW 17.81 COL 1.57 WIDGET-ID 174
+     RECT-21 AT ROW 22 COL 49.57 WIDGET-ID 180
     WITH 1 DOWN NO-BOX KEEP-TAB-ORDER OVERLAY 
          SIDE-LABELS NO-UNDERLINE THREE-D 
          AT COL 1 ROW 1
@@ -378,8 +392,8 @@ IF SESSION:DISPLAY-TYPE = "GUI":U THEN
   CREATE WINDOW C-Win ASSIGN
          HIDDEN             = YES
          TITLE              = "Cheques"
-         COLUMN             = 1
-         ROW                = 1
+         COLUMN             = 1.57
+         ROW                = 1.19
          HEIGHT             = 26.54
          WIDTH              = 144.29
          MAX-HEIGHT         = 27.15
@@ -408,9 +422,9 @@ ELSE {&WINDOW-NAME} = CURRENT-WINDOW.
 /* SETTINGS FOR WINDOW C-Win
   VISIBLE,,RUN-PERSISTENT                                               */
 /* SETTINGS FOR FRAME DEFAULT-FRAME
-   FRAME-NAME                                                           */
+   FRAME-NAME Custom                                                    */
 /* BROWSE-TAB brwCheques radFilter DEFAULT-FRAME */
-/* BROWSE-TAB brwCreditAmounts filID DEFAULT-FRAME */
+/* BROWSE-TAB brwCreditAmounts brwCheques DEFAULT-FRAME */
 ASSIGN 
        customer.CusArea:VISIBLE IN BROWSE brwCheques = FALSE.
 
@@ -442,6 +456,11 @@ ASSIGN
    NO-ENABLE                                                            */
 /* SETTINGS FOR FILL-IN filBIll# IN FRAME DEFAULT-FRAME
    NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN filBIllId IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+ASSIGN 
+       filBIllId:READ-ONLY IN FRAME DEFAULT-FRAME        = TRUE.
+
 /* SETTINGS FOR FILL-IN filBranch IN FRAME DEFAULT-FRAME
    NO-ENABLE                                                            */
 /* SETTINGS FOR FILL-IN filChqAmount IN FRAME DEFAULT-FRAME
@@ -451,8 +470,6 @@ ASSIGN
 /* SETTINGS FOR FILL-IN filID IN FRAME DEFAULT-FRAME
    NO-ENABLE                                                            */
 /* SETTINGS FOR FILL-IN filToCollect IN FRAME DEFAULT-FRAME
-   NO-ENABLE                                                            */
-/* SETTINGS FOR FILL-IN filTotal IN FRAME DEFAULT-FRAME
    NO-ENABLE                                                            */
 /* SETTINGS FOR FILL-IN filUnDedicated IN FRAME DEFAULT-FRAME
    NO-ENABLE                                                            */
@@ -515,9 +532,9 @@ OPEN QUERY brwCreditAmounts FOR EACH tt-chqBills BY tt-chqBills.billDate.
 
 CREATE CONTROL-FRAME CtrlFrame-4 ASSIGN
        FRAME           = FRAME DEFAULT-FRAME:HANDLE
-       ROW             = 1.27
+       ROW             = 1.31
        COLUMN          = 31.57
-       HEIGHT          = .81
+       HEIGHT          = .88
        WIDTH           = 16.14
        WIDGET-ID       = 164
        HIDDEN          = no
@@ -525,29 +542,17 @@ CREATE CONTROL-FRAME CtrlFrame-4 ASSIGN
 
 CREATE CONTROL-FRAME CtrlFrame-2 ASSIGN
        FRAME           = FRAME DEFAULT-FRAME:HANDLE
-       ROW             = 18.27
-       COLUMN          = 25
+       ROW             = 18.08
+       COLUMN          = 27
        HEIGHT          = .81
        WIDTH           = 20.86
        WIDGET-ID       = 72
        HIDDEN          = no
        SENSITIVE       = yes.
-
-CREATE CONTROL-FRAME CtrlFrame-3 ASSIGN
-       FRAME           = FRAME DEFAULT-FRAME:HANDLE
-       ROW             = 19.27
-       COLUMN          = 53.86
-       HEIGHT          = .81
-       WIDTH           = 20.86
-       WIDGET-ID       = 112
-       HIDDEN          = no
-       SENSITIVE       = yes.
 /* CtrlFrame-4 OCXINFO:CREATE-CONTROL from: {20DD1B9E-87C4-11D1-8BE3-0000F8754DA1} type: DTPicker */
 /* CtrlFrame-2 OCXINFO:CREATE-CONTROL from: {20DD1B9E-87C4-11D1-8BE3-0000F8754DA1} type: DTPicker */
-/* CtrlFrame-3 OCXINFO:CREATE-CONTROL from: {20DD1B9E-87C4-11D1-8BE3-0000F8754DA1} type: DTPicker2 */
-      CtrlFrame-4:MOVE-AFTER(radFilter:HANDLE IN FRAME DEFAULT-FRAME).
-      CtrlFrame-2:MOVE-AFTER(filID:HANDLE IN FRAME DEFAULT-FRAME).
-      CtrlFrame-3:MOVE-AFTER(cmbArea:HANDLE IN FRAME DEFAULT-FRAME).
+      CtrlFrame-4:MOVE-AFTER(brwCreditAmounts:HANDLE IN FRAME DEFAULT-FRAME).
+      CtrlFrame-2:MOVE-AFTER(CtrlFrame-4).
 
 &ENDIF
 
@@ -637,13 +642,12 @@ ON VALUE-CHANGED OF brwCreditAmounts IN FRAME DEFAULT-FRAME /* Pending Bills of 
 DO:
   IF AVAILABLE tt-chqBills THEN
   DO:
-      filBIll# = tt-chqBills.bill#.
-      calendr2:VALUE = tt-chqBills.billDate.
+      filBIll# = tt-chqBills.billNo.
       filToCollect = tt-chqBills.creditAmount.
-      filTotal = tt-chqBills.tol.
       filAmount = tt-chqBills.debitAmount.
+      filBIllId = tt-chqBills.bill#.
   END.
-  DISPLAY filBIll# filAmount filTotal filToCollect WITH FRAME {&FRAME-NAME}.
+  DISPLAY filBIll# filBIllId filAmount filToCollect WITH FRAME {&FRAME-NAME}.
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -713,8 +717,8 @@ DO:
   DISPLAY cmbArea cmbCus filChqNo filID filBank filBranch radStat WITH FRAME {&FRAME-NAME}.
   
   calendr:ENABLED = FALSE.
-  DISABLE btnPay btnDoPay btnReturned  filChqAmount btnDoPay btnCancel btnSave cmbArea cmbCus filChqAmount filChqNo filID filBank filBranch radStat WITH FRAME {&FRAME-NAME}.
-  ENABLE brwCheques btnAdd btnClose btnDel btnMod WITH FRAME {&FRAME-NAME}.
+  DISABLE filAmount btnPay btnDoPay btnReturned  filChqAmount btnDoPay btnCancel btnSave cmbArea cmbCus filChqAmount filChqNo filID filBank filBranch radStat WITH FRAME {&FRAME-NAME}.
+  ENABLE brwCreditAmounts brwCheques btnAdd btnClose btnDel btnMod WITH FRAME {&FRAME-NAME}.
     END.
 END.
 
@@ -739,27 +743,33 @@ ON CHOOSE OF btnDel IN FRAME DEFAULT-FRAME /* Delete */
 DO:
   IF filID <> 0 THEN
   DO:
-      MESSAGE "Conferm to delete the record?" VIEW-AS ALERT-BOX QUESTION BUTTONS YES-NO UPDATE yn AS LOGICAL.
-      IF yn = YES THEN
-      DO:
-          FIND FIRST cheques WHERE cheques.ID = filID EXCLUSIVE-LOCK NO-ERROR.
-          IF AVAILABLE cheques THEN
-            DELETE cheques.
-          ELSE
-              MESSAGE "No Records to Delete." VIEW-AS ALERT-BOX ERROR BUTTONS OK .
-          
-          OPEN QUERY brwCheques FOR
-              EACH ics.cheques NO-LOCK,
-              EACH ics.customer WHERE customer.cusID = cheques.cusID NO-LOCK INDEXED-REPOSITION.
-          APPLY "VALUE-CHANGED":U TO brwCheques.
-
-          IF NOT ERROR-STATUS:ERROR THEN
-              MESSAGE "Record successfully deleted." VIEW-AS ALERT-BOX INFO BUTTONS OK.
-              
-      END.
-  END.
-  ELSE
       MESSAGE "No records to Delete." VIEW-AS ALERT-BOX ERROR BUTTONS OK.
+      RETURN.
+  END.
+  IF filChqAmount <> filUnDedicated THEN
+  DO:
+      MESSAGE "Check in use. Can not be deleted." VIEW-AS ALERT-BOX WARNING BUTTONS OK.
+  END.
+
+  MESSAGE "Conferm to delete the record?" VIEW-AS ALERT-BOX QUESTION BUTTONS YES-NO UPDATE yn AS LOGICAL.
+  IF yn = YES THEN
+  DO:
+      FIND FIRST cheques WHERE cheques.ID = filID EXCLUSIVE-LOCK NO-ERROR.
+      IF AVAILABLE cheques THEN
+        DELETE cheques.
+      ELSE
+          MESSAGE "No Records to Delete." VIEW-AS ALERT-BOX ERROR BUTTONS OK .
+      
+      OPEN QUERY brwCheques FOR
+          EACH ics.cheques NO-LOCK,
+          EACH ics.customer WHERE customer.cusID = cheques.cusID NO-LOCK INDEXED-REPOSITION.
+      APPLY "VALUE-CHANGED":U TO brwCheques.
+
+      IF NOT ERROR-STATUS:ERROR THEN
+          MESSAGE "Record successfully deleted." VIEW-AS ALERT-BOX INFO BUTTONS OK.
+          
+  END.
+  
             
 END.
 
@@ -769,12 +779,13 @@ END.
 
 &Scoped-define SELF-NAME btnDoPay
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL btnDoPay C-Win
-ON CHOOSE OF btnDoPay IN FRAME DEFAULT-FRAME /* Pament */
+ON CHOOSE OF btnDoPay IN FRAME DEFAULT-FRAME /* Select Bill */
 DO:
-  
-     ENABLE filAmount btnPay WITH FRAME {&FRAME-NAME}.
-     DISABLE btnDoPay WITH FRAME {&FRAME-NAME}.
-     DISPLAY filAmount btnDoPay btnPay WITH FRAME {&FRAME-NAME}.
+    
+        ENABLE filAmount btnPay WITH FRAME {&FRAME-NAME}.
+        DISABLE btnDoPay brwCreditAmounts WITH FRAME {&FRAME-NAME}.
+        DISPLAY filAmount btnDoPay btnPay WITH FRAME {&FRAME-NAME}.
+    
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -794,7 +805,7 @@ END.
 
 &Scoped-define SELF-NAME btnMod
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL btnMod C-Win
-ON CHOOSE OF btnMod IN FRAME DEFAULT-FRAME /* Modify */
+ON CHOOSE OF btnMod IN FRAME DEFAULT-FRAME /* Modify / Pay */
 DO:
   IF filID <> 0 THEN
   DO:
@@ -805,6 +816,8 @@ DO:
   END.
   ELSE
       MESSAGE "No records to Modify." VIEW-AS ALERT-BOX ERROR BUTTONS OK.
+  IF filChqAmount <> filUnDedicated THEN DISABLE filChqAmount WITH FRAME {&FRAME-NAME}.
+  IF radStat = "R" THEN DISABLE btnDoPay btnReturned WITH FRAME {&FRAME-NAME}.
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -813,7 +826,7 @@ END.
 
 &Scoped-define SELF-NAME btnPay
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL btnPay C-Win
-ON CHOOSE OF btnPay IN FRAME DEFAULT-FRAME /* Pay >> */
+ON CHOOSE OF btnPay IN FRAME DEFAULT-FRAME /* Allocate amount */
 DO:
   IF filAmount > filUnDedicated THEN
   DO:
@@ -822,14 +835,13 @@ DO:
       DISPLAY filAmount WITH FRAME DEFAULT-FRAME.
       RETURN.
   END.
-  MESSAGE "Confrm to Pay this Bill?"
-      VIEW-AS ALERT-BOX INFO BUTTONS YES-NO UPDATE yn AS LOGICAL.
+  MESSAGE "Confrm to Pay this Bill?" VIEW-AS ALERT-BOX INFO BUTTONS YES-NO UPDATE yn AS LOGICAL.
   IF yn = YES THEN
   DO:
-      FIND FIRST tt-chqBills WHERE tt-chqBills.bill# = filBIll#.
+      FIND FIRST tt-chqBills WHERE tt-chqBills.bill# = filBIllId.
       DO:
           IF tt-chqBills.creditAmount >= filAmount THEN
-            tt-chqBills.debitAmount = filAmount.
+              tt-chqBills.debitAmount = filAmount.
           ELSE
           DO:
               MESSAGE "Too large amount to pay." VIEW-AS ALERT-BOX INFO BUTTONS OK.
@@ -853,7 +865,7 @@ DO:
       APPLY "VALUE-CHANGED":U TO brwCreditAmounts IN FRAME {&FRAME-NAME}.
   END.
   DISABLE {&SELF-NAME} WITH FRAME {&FRAME-NAME}.
-  ENABLE btnDoPay  WITH FRAME {&FRAME-NAME}.
+  ENABLE btnDoPay brwCreditAmounts WITH FRAME {&FRAME-NAME}.
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -869,35 +881,28 @@ DO:
       MESSAGE "Conferm to Return this Cheque?" VIEW-AS ALERT-BOX QUESTION BUTTONS YES-NO UPDATE yn AS LOGICAL.
       IF yn = YES THEN
       DO:
-/*           FIND FIRST cheques WHERE cheques.ID = filID EXCLUSIVE-LOCK NO-ERROR.                   */
-/*           IF AVAILABLE cheques THEN                                                              */
-/*             DELETE cheques.                                                                      */
-/*           ELSE                                                                                   */
-/*               MESSAGE "No Records to Delete." VIEW-AS ALERT-BOX ERROR BUTTONS OK .               */
-/*                                                                                                  */
-/*           OPEN QUERY brwCheques FOR                                                              */
-/*               EACH ics.cheques NO-LOCK,                                                          */
-/*               EACH ics.customer WHERE customer.cusID = cheques.cusID NO-LOCK INDEXED-REPOSITION. */
-/*           APPLY "VALUE-CHANGED":U TO brwCheques.                                                 */
           FOR EACH billChqAssoc WHERE billChqAssoc.chq# = filChqNo.
-          IF AVAILABLE billChqAssoc THEN
-          DO:
-              DO:
-                  FIND FIRST bills WHERE bills.bill# = Payments.bill# EXCLUSIVE-LOCK NO-ERROR.
-                     bills.paidAmount = bills.paidAmount - Payments.Amount.
-                  RELEASE Payments.
-                  DELETE billChqAssoc.
-              END.
-              FIND FIRST cheques WHERE cheques.chqNo = filChqNo.
-                cheques.dedicatedAmount = 0.
-                cheques.stat = "R".
-              RELEASE cheques.
+              FIND FIRST bills WHERE bills.bill# = billChqAssoc.bill# EXCLUSIVE-LOCK NO-ERROR.
+              IF AVAILABLE bills THEN
+                  bills.paidAmount = bills.paidAmount - billChqAssoc.amount.
+              RELEASE bills.
 
-              OPEN QUERY brwCheques FOR                                                              
-                   EACH ics.cheques NO-LOCK,                                                          
-                   EACH ics.customer WHERE customer.cusID = cheques.cusID NO-LOCK INDEXED-REPOSITION. 
+              FOR EACH Payments WHERE Payments.PayMethod = "Cheque" AND Payments.bill# = billChqAssoc.bill# AND Payments.Amount = billChqAssoc.amount.
+                  Payments.stat = FALSE.
+              END.
+
+              DELETE billChqAssoc.
           END.
-          END.
+
+          FIND FIRST cheques WHERE cheques.chqNo = filChqNo.
+              cheques.dedicatedAmount = 0.
+              cheques.stat = "R".
+          RELEASE cheques.
+          
+          OPEN QUERY brwCheques FOR
+          EACH ics.cheques NO-LOCK,
+          EACH ics.customer WHERE customer.cusID = cheques.cusID NO-LOCK INDEXED-REPOSITION.
+
           IF NOT ERROR-STATUS:ERROR THEN
               MESSAGE "Cheque successfully Returned." VIEW-AS ALERT-BOX INFO BUTTONS OK.
               
@@ -963,7 +968,7 @@ DO:
             FIND FIRST cheques WHERE cheques.chqNo = filChqNo NO-ERROR.
             IF AVAILABLE cheques THEN
             DO:
-                MESSAGE "Cheque No already excists." VIEW-AS ALERT-BOX WARNING BUTTONS OK.
+                MESSAGE "Cheque Number already excists." VIEW-AS ALERT-BOX WARNING BUTTONS OK.
                 RETURN.
             END.
             RELEASE cheques.
@@ -993,73 +998,60 @@ DO:
         DO:
             FIND FIRST cheques WHERE cheques.ID = filID.
             IF AVAILABLE cheques THEN
-            ASSIGN
-            cheques.amount   = filChqAmount 
-            cheques.bankName = filBank 
-            cheques.Branch   = filBranch 
-            cheques.chqDate  = calendr:VALUE 
-            cheques.chqNo    = filChqNo 
-            cheques.crDate   = TODAY 
-            cheques.cusID    = cmbCus 
-            cheques.ID       = filID 
-            cheques.stat     = radStat 
-            .
-    
-            FOR EACH tt-chqBills WHERE .
-                FIND FIRST paramtrs WHERE NAME = "PaymentID" EXCLUSIVE-LOCK NO-ERROR.
-                   tempPayID = INT(val).
-                   val = STRING(tempPayID + 1).
-                RELEASE paramtrs.
-    
-                CREATE Payments.
-                 Payments.bill#       = tt-chqBills.bill#.
-                 Payments.Amount      = tt-chqBills.debitAmount.
-                 Payments.CusID       = cmbCus.
-                 Payments.date        = TODAY.
-                 Payments.PaymentID   = tempPayID + 1.
-                 Payments.PayMethod   = "Cheque".
-                 Payments.stat        = YES.
-
-                CREATE billChqAssoc.
+            DO:
                 ASSIGN
-                    billChqAssoc.chq# = filChqNo
-                    billChqAssoc.bill# = filBIll#
-                    billChqAssoc.amount = tt-chqBills.debitAmount.
+                cheques.amount   = filChqAmount 
+                cheques.bankName = filBank 
+                cheques.Branch   = filBranch 
+                cheques.chqDate  = calendr:VALUE 
+                cheques.chqNo    = filChqNo 
+                cheques.crDate   = TODAY 
+                cheques.cusID    = cmbCus 
+                cheques.ID       = filID 
+                cheques.stat     = radStat 
+                .
+        
+                FOR EACH tt-chqBills WHERE tt-chqBills.debitAmount > 0.
+                    FIND FIRST paramtrs WHERE NAME = "PaymentID" EXCLUSIVE-LOCK NO-ERROR.
+                       tempPayID = INT(val).
+                       val = STRING(tempPayID + 1).
+                    RELEASE paramtrs.
+        
+                    CREATE Payments.
+                     Payments.bill#       = tt-chqBills.bill#.
+                     Payments.Amount      = tt-chqBills.debitAmount.
+                     Payments.CusID       = cmbCus.
+                     Payments.date        = TODAY.
+                     Payments.PaymentID   = tempPayID + 1.
+                     Payments.PayMethod   = "Cheque".
+                     Payments.stat        = YES.
+
+                     cheques.dedicatedAmount = cheques.dedicatedAmount + tt-chqBills.debitAmount.
     
-            FIND FIRST bills WHERE bills.bill# = tt-chqBills.bill#.
-                bills.paidAmount = bills.paidAmount + debitAmount.
-            RELEASE bills.
+                    CREATE billChqAssoc.
+                    ASSIGN
+                        billChqAssoc.chq# = filChqNo
+                        billChqAssoc.bill# = filBIll#
+                        billChqAssoc.amount = tt-chqBills.debitAmount.
+        
+                    FIND FIRST bills WHERE bills.bill# = tt-chqBills.bill#.
+                        bills.paidAmount = bills.paidAmount + debitAmount.
+                    RELEASE bills.
+                END.
+        
+                IF NOT ERROR-STATUS:ERROR THEN
+                    MESSAGE "Record successfully Modified." VIEW-AS ALERT-BOX INFO BUTTONS OK.
             END.
-    
-            IF NOT ERROR-STATUS:ERROR THEN
-                MESSAGE "Record successfully Modified." VIEW-AS ALERT-BOX INFO BUTTONS OK.
         END.
     
-            FOR EACH tt-chqBills.
-                FIND FIRST billChqAssoc WHERE billChqAssoc.bill#  = tt-chqBills.bill# NO-ERROR.
-                IF AVAILABLE billChqAssoc THEN
-                    DELETE billChqAssoc.
-                RELEASE billChqAssoc.
-
-                CREATE billChqAssoc.
-                     billChqAssoc.bill#  = tt-chqBills.bill#.
-                     billChqAssoc.chq#   = filChqNo.
-                     billChqAssoc.amount = debitAmount.
-/*                 FIND FIRST bills WHERE bills.bill# = billChqAssoc.bill#. */
-/*                     bills.paidAmount = bills.paidAmount + debitAmount.   */
-/*                 RELEASE bills.                                           */
-            END.
-    
-    
-    
-      DISABLE btnReturned btnDoPay btnCancel btnSave cmbArea filChqAmount cmbCus filChqNo filID filBank filBranch radStat WITH FRAME {&FRAME-NAME}.
-      ENABLE brwCheques btnAdd btnClose btnDel btnMod WITH FRAME {&FRAME-NAME}.
-      calendr:ENABLED = FALSE.
+        DISABLE filAmount btnReturned btnDoPay btnCancel btnSave cmbArea filChqAmount cmbCus filChqNo filID filBank filBranch radStat WITH FRAME {&FRAME-NAME}.
+        ENABLE brwCreditAmounts brwCheques btnAdd btnClose btnDel btnMod WITH FRAME {&FRAME-NAME}.
+        calendr:ENABLED = FALSE.
         
-      OPEN QUERY brwCheques FOR
+        OPEN QUERY brwCheques FOR
               EACH ics.cheques NO-LOCK,
               EACH ics.customer WHERE customer.cusID = cheques.cusID NO-LOCK INDEXED-REPOSITION.
-      APPLY "VALUE-CHANGED":U TO brwCheques.
+        APPLY "VALUE-CHANGED":U TO brwCheques.
     END.
 END.
 
@@ -1164,22 +1156,6 @@ END.
 &Scoped-define SELF-NAME CtrlFrame-2
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL CtrlFrame-2 C-Win OCX.Click
 PROCEDURE CtrlFrame-2.DTPicker.Click .
-/*------------------------------------------------------------------------------
-  Purpose:     
-  Parameters:  None required for OCX.
-  Notes:       
-------------------------------------------------------------------------------*/
-
-calendr:VALUE = STRING(TODAY,"99/99/9999").
-END PROCEDURE.
-
-/* _UIB-CODE-BLOCK-END */
-&ANALYZE-RESUME
-
-
-&Scoped-define SELF-NAME CtrlFrame-3
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL CtrlFrame-3 C-Win OCX.Click
-PROCEDURE CtrlFrame-3.DTPicker2.Click .
 /*------------------------------------------------------------------------------
   Purpose:     
   Parameters:  None required for OCX.
@@ -1397,8 +1373,6 @@ DO ON ERROR   UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK
   session_Window = session_Window + 1.
   calendr = chCtrlFrame-2:DTPicker.
   calendr:ENABLED = FALSE.
-  calendr2 = chCtrlFrame-3:DTPicker2.
-  calendr2:ENABLED = FALSE.
   calendr3 = chCtrlFrame-4:DTPicker.
   calendr3:ENABLED = FALSE.
   calendr3:VALUE = TODAY.
@@ -1453,6 +1427,7 @@ EMPTY TEMP-TABLE tt-chqBills.
 FOR EACH bills WHERE bills.cusID = cmbCus AND (bills.tol - bills.paidAmount) > 0.
     CREATE tt-chqBills.
          tt-chqBills.bill#        = bills.bill#.
+         tt-chqBills.billNo        = bills.billNo.
          tt-chqBills.billDate     = bills.bilDate.
          tt-chqBills.creditAmount = (bills.tol - bills.paidAmount).
          tt-chqBills.tol          = bills.tol.
@@ -1465,7 +1440,8 @@ FOR EACH billChqAssoc WHERE billChqAssoc.chq# = filChqNo.
     tempUnDedicated = tempUnDedicated - billChqAssoc.amount.
 END.
 
-filUnDedicated = tempUnDedicated.
+IF tempUnDedicated >= 0 THEN filUnDedicated = tempUnDedicated.
+ELSE filUnDedicated = 0.
 
 DISPLAY filUnDedicated WITH FRAME {&FRAME-NAME}.
 
@@ -1501,9 +1477,6 @@ DO:
     chCtrlFrame-2 = CtrlFrame-2:COM-HANDLE
     UIB_S = chCtrlFrame-2:LoadControls( OCXFile, "CtrlFrame-2":U)
     CtrlFrame-2:NAME = "CtrlFrame-2":U
-    chCtrlFrame-3 = CtrlFrame-3:COM-HANDLE
-    UIB_S = chCtrlFrame-3:LoadControls( OCXFile, "CtrlFrame-3":U)
-    CtrlFrame-3:NAME = "CtrlFrame-3":U
     chCtrlFrame-4 = CtrlFrame-4:COM-HANDLE
     UIB_S = chCtrlFrame-4:LoadControls( OCXFile, "CtrlFrame-4":U)
     CtrlFrame-4:NAME = "CtrlFrame-4":U
@@ -1606,12 +1579,12 @@ PROCEDURE enable_UI :
                Settings" section of the widget Property Sheets.
 ------------------------------------------------------------------------------*/
   RUN control_load.
-  DISPLAY filSearch cmbSearchCol cmbSearchArea cmbSearchTime radFilter filID 
-          filBIll# cmbArea cmbCus filTotal filToCollect filChqNo filUnDedicated 
-          filChqAmount filAmount filBank filBranch radStat 
+  DISPLAY filBIllId radFilter filID filBIll# cmbArea cmbCus filChqNo 
+          filToCollect filChqAmount filSearch filUnDedicated filBank 
+          cmbSearchCol filAmount cmbSearchArea filBranch cmbSearchTime radStat 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
-  ENABLE btnSearch filSearch btnGo radFilter brwCheques brwCreditAmounts btnAdd 
-         btnMod btnClose 
+  ENABLE radFilter brwCheques brwCreditAmounts btnGo filSearch btnAdd btnSearch 
+         btnMod btnClose RECT-5 RECT-6 RECT-21 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
   {&OPEN-BROWSERS-IN-QUERY-DEFAULT-FRAME}
   VIEW C-Win.

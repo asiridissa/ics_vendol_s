@@ -36,8 +36,8 @@ FIELDS  itmName         AS CHAR LABEL "Item"
 FIELDS  weight          AS DEC LABEL "Weight"
 FIELDS  cases           AS INT LABEL "Cas"
 FIELDS  pieses          AS INT LABEL "Pcs"
-FIELDS  goodReturnC     AS INT LABEL "GdC"
-FIELDS  goodreturnP     AS INT LABEL "GdP"
+FIELDS  GRRD            AS INT LABEL "GRR"
+FIELDS  GRST            AS INT LABEL "GES"
 FIELDS  damageC         AS INT LABEL "DmC"
 FIELDS  damP            AS INT LABEL "DmP"
 FIELDS  expC            AS INT LABEL "ExC"
@@ -75,7 +75,7 @@ DEFINE VARIABLE tempCusName AS CHAR     NO-UNDO.
 &Scoped-define INTERNAL-TABLES tt-sale bills area customer vehical
 
 /* Definitions for BROWSE brw                                           */
-&Scoped-define FIELDS-IN-QUERY-brw /* reciptID */ /* tt-sale.bill# */ /* item# */ itmName weight /* cases */ pieses /* goodReturnC */ goodreturnP /* damageC */ damP /* expC */ expP ItmDiscount amount   
+&Scoped-define FIELDS-IN-QUERY-brw /* reciptID */ /* tt-sale.bill# */ /* item# */ itmName weight /* cases */ pieses /* damageC */ damP /* expC */ expP GRRD GRST ItmDiscount amount   
 &Scoped-define ENABLED-FIELDS-IN-QUERY-brw   
 &Scoped-define SELF-NAME brw
 &Scoped-define QUERY-STRING-brw FOR EACH tt-sale
@@ -120,8 +120,8 @@ bills.tol - bills.paidAmount
 btnModBill btnDelBill brwBill btnSearch brw filSearch btnPayment ~
 btnBulkBilling RECT-11 RECT-12 RECT-13 ss RECT-14 RECT-16 RECT-17 
 &Scoped-Define DISPLAYED-OBJECTS filBillNo cmbArea cmbCus cmbVeh cmbEmp ~
-filDiscountRate filVarience filPaid filDiscountRateItem cmbName filPieses ~
-filDamP filExpP filGoodP filStockP filLorriesP filBill# cmbSearchCol ~
+filDiscountRate filPaid filDiscountRateItem filVarience cmbName filPieses ~
+filDamP filExpP filGRRD filGRST filStockP filLorriesP filBill# cmbSearchCol ~
 cmbSearchTime filTotal filDiscountedTotal filDiscountedAmount filAmount ~
 filSearch filRecipt# filKg filUnitPrice filCasePrice cmbSearchArea ~
 filPerCase filDiscountBill filDiscountItem filDiscountBillAmount ~
@@ -344,10 +344,16 @@ DEFINE VARIABLE filExpP AS INTEGER FORMAT ">>>9":U INITIAL 0
      SIZE 6 BY .88
      BGCOLOR 15 FGCOLOR 1  NO-UNDO.
 
-DEFINE VARIABLE filGoodP AS INTEGER FORMAT ">>>9":U INITIAL 0 
-     LABEL "GR P" 
+DEFINE VARIABLE filGRRD AS INTEGER FORMAT ">>>9":U INITIAL 0 
+     LABEL "GRRD P" 
      VIEW-AS FILL-IN 
      SIZE 6 BY .88
+     BGCOLOR 15 FGCOLOR 1  NO-UNDO.
+
+DEFINE VARIABLE filGRST AS INTEGER FORMAT ">>>9":U INITIAL 0 
+     LABEL "GRST P" 
+     VIEW-AS FILL-IN 
+     SIZE 6 BY .88 TOOLTIP "Good/Market return came back to the stock"
      BGCOLOR 15 FGCOLOR 1  NO-UNDO.
 
 DEFINE VARIABLE filKg AS DECIMAL FORMAT ">>9.999":U INITIAL 0 
@@ -363,10 +369,10 @@ DEFINE VARIABLE filLorriesP AS INTEGER FORMAT ">>>9":U INITIAL 0
      BGCOLOR 7 FGCOLOR 11  NO-UNDO.
 
 DEFINE VARIABLE filPaid AS DECIMAL FORMAT ">,>>>,>>9.99":U INITIAL 0 
-     LABEL "Paid" 
+     LABEL "Cash" 
      VIEW-AS FILL-IN 
      SIZE 14 BY .88
-     BGCOLOR 15 FGCOLOR 1  NO-UNDO.
+     BGCOLOR 15 FGCOLOR 2 FONT 10 NO-UNDO.
 
 DEFINE VARIABLE filPerCase AS INTEGER FORMAT ">,>>>,>>>,>>>9":U INITIAL 0 
      LABEL "PerCase" 
@@ -390,7 +396,7 @@ DEFINE VARIABLE filSearch AS CHARACTER FORMAT "X(256)":U
      VIEW-AS FILL-IN 
      SIZE 24.29 BY .88 NO-UNDO.
 
-DEFINE VARIABLE filStockP AS INTEGER FORMAT ">>>9":U INITIAL 0 
+DEFINE VARIABLE filStockP AS INTEGER FORMAT ">>>>9":U INITIAL 0 
      LABEL "Stock P" 
      VIEW-AS FILL-IN 
      SIZE 9 BY .88
@@ -465,12 +471,13 @@ DEFINE BROWSE brw
  weight  FORMAT ">>9.999"    
 /*  cases   FORMAT ">>9" */
  pieses  FORMAT ">>9"    
-/*  goodReturnC FORMAT ">>9" */
- goodreturnP FORMAT ">>9"
+
 /*  damageC     FORMAT ">>9" */
  damP        FORMAT ">>9"
 /*  expC        FORMAT ">>9" */
  expP        FORMAT ">>9"
+ GRRD FORMAT ">>9" LABEL "GRR"
+ GRST FORMAT ">>9" LABEL "GRS"
  ItmDiscount FORMAT ">>9.99"
  amount
 /* _UIB-CODE-BLOCK-END */
@@ -488,7 +495,7 @@ DEFINE BROWSE brwBill
       area.areaCode COLUMN-LABEL " Area" FORMAT "x(8)":U WIDTH 5
       customer.cusName COLUMN-LABEL "                                Customer" FORMAT "X(50)":U
             WIDTH 35
-      bills.discountRate COLUMN-LABEL "Dis %" FORMAT ">9.99":U
+      bills.discountRate COLUMN-LABEL "Dis %" FORMAT ">>9.99":U
             WIDTH 6
       bills.tol COLUMN-LABEL "Total" FORMAT "->>>,>>>,>>9.99":U
             WIDTH 15
@@ -498,7 +505,7 @@ DEFINE BROWSE brwBill
 &ANALYZE-RESUME
     WITH NO-ROW-MARKERS SEPARATORS NO-TAB-STOP SIZE 97.86 BY 14.69
          FONT 10
-         TITLE "Bills" ROW-HEIGHT-CHARS .55 FIT-LAST-COLUMN.
+         TITLE "Bills" ROW-HEIGHT-CHARS .54 FIT-LAST-COLUMN TOOLTIP "Double click to view the details".
 
 
 /* ************************  Frame Definitions  *********************** */
@@ -510,19 +517,20 @@ DEFINE FRAME DEFAULT-FRAME
      cmbVeh AT ROW 10.04 COL 8.43 COLON-ALIGNED WIDGET-ID 84
      cmbEmp AT ROW 11.04 COL 8.43 COLON-ALIGNED WIDGET-ID 82
      filDiscountRate AT ROW 12.73 COL 34.72 COLON-ALIGNED NO-LABEL WIDGET-ID 174
-     filVarience AT ROW 12.96 COL 8.43 COLON-ALIGNED WIDGET-ID 202 NO-TAB-STOP 
-     btnAdd AT ROW 16.23 COL 15.57 RIGHT-ALIGNED WIDGET-ID 42
      filPaid AT ROW 14.88 COL 8.43 COLON-ALIGNED WIDGET-ID 142 NO-TAB-STOP 
+     btnAdd AT ROW 16.23 COL 15.57 RIGHT-ALIGNED WIDGET-ID 42
      filDiscountRateItem AT ROW 19.42 COL 34.72 COLON-ALIGNED NO-LABEL WIDGET-ID 122
+     filVarience AT ROW 12.96 COL 8.43 COLON-ALIGNED WIDGET-ID 202 NO-TAB-STOP 
      cmbName AT ROW 21.54 COL 6.72 COLON-ALIGNED WIDGET-ID 54
-     filPieses AT ROW 22.54 COL 6.72 COLON-ALIGNED WIDGET-ID 32
-     filDamP AT ROW 22.54 COL 33.86 COLON-ALIGNED WIDGET-ID 38
-     filExpP AT ROW 23.54 COL 33.86 COLON-ALIGNED WIDGET-ID 40
-     filGoodP AT ROW 23.5 COL 6.72 COLON-ALIGNED WIDGET-ID 28
+     filPieses AT ROW 22.58 COL 6.72 COLON-ALIGNED WIDGET-ID 32
+     filDamP AT ROW 22.58 COL 20.14 COLON-ALIGNED WIDGET-ID 38
+     filExpP AT ROW 23.5 COL 20.14 COLON-ALIGNED WIDGET-ID 40
+     filGRRD AT ROW 22.58 COL 36.86 COLON-ALIGNED WIDGET-ID 28
+     filGRST AT ROW 23.54 COL 36.86 COLON-ALIGNED WIDGET-ID 204
      btnSave AT ROW 17.35 COL 10.14 WIDGET-ID 52
-     filStockP AT ROW 25.42 COL 33.86 COLON-ALIGNED WIDGET-ID 158
+     filStockP AT ROW 25.5 COL 33.86 COLON-ALIGNED WIDGET-ID 158
+     filLorriesP AT ROW 26.42 COL 33.86 COLON-ALIGNED WIDGET-ID 176
      btnNewBill AT ROW 3.62 COL 2.43 WIDGET-ID 94 NO-TAB-STOP 
-     filLorriesP AT ROW 26.35 COL 33.86 COLON-ALIGNED WIDGET-ID 176
      filBill# AT ROW 6.19 COL 8.43 COLON-ALIGNED WIDGET-ID 2 NO-TAB-STOP 
      cmbSearchCol AT ROW 2.35 COL 4.57 COLON-ALIGNED WIDGET-ID 136 NO-TAB-STOP 
      cmbSearchTime AT ROW 2.35 COL 23.86 COLON-ALIGNED WIDGET-ID 130 NO-TAB-STOP 
@@ -541,16 +549,15 @@ DEFINE FRAME DEFAULT-FRAME
      filAmount AT ROW 19.62 COL 6.72 COLON-ALIGNED WIDGET-ID 34 NO-TAB-STOP 
      filSearch AT ROW 1.31 COL 12.72 COLON-ALIGNED NO-LABEL WIDGET-ID 126 NO-TAB-STOP 
      filRecipt# AT ROW 20.54 COL 29.29 COLON-ALIGNED WIDGET-ID 4 NO-TAB-STOP 
-     filKg AT ROW 24.42 COL 6.72 COLON-ALIGNED WIDGET-ID 8 NO-TAB-STOP 
-     filUnitPrice AT ROW 25.35 COL 6.72 COLON-ALIGNED WIDGET-ID 58 NO-TAB-STOP 
-     filCasePrice AT ROW 26.27 COL 6.72 COLON-ALIGNED WIDGET-ID 64 NO-TAB-STOP 
+     filKg AT ROW 24.5 COL 6.72 COLON-ALIGNED WIDGET-ID 8 NO-TAB-STOP 
+     filUnitPrice AT ROW 25.42 COL 6.72 COLON-ALIGNED WIDGET-ID 58 NO-TAB-STOP 
+     filCasePrice AT ROW 26.35 COL 6.72 COLON-ALIGNED WIDGET-ID 64 NO-TAB-STOP 
      cmbSearchArea AT ROW 1.31 COL 4.57 COLON-ALIGNED WIDGET-ID 156 NO-TAB-STOP 
-     filPerCase AT ROW 24.5 COL 33.86 COLON-ALIGNED WIDGET-ID 162 NO-TAB-STOP 
+     filPerCase AT ROW 24.58 COL 33.86 COLON-ALIGNED WIDGET-ID 162 NO-TAB-STOP 
      btnSaveBill AT ROW 4.69 COL 17.29 WIDGET-ID 170 NO-TAB-STOP 
      btnPayment AT ROW 14.77 COL 31.72 WIDGET-ID 172 NO-TAB-STOP 
      filDiscountBill AT ROW 12.73 COL 23.29 COLON-ALIGNED NO-LABEL WIDGET-ID 180 NO-TAB-STOP 
      filDiscountItem AT ROW 19.42 COL 23.29 COLON-ALIGNED NO-LABEL WIDGET-ID 188 NO-TAB-STOP 
-     filDiscountBillAmount AT ROW 13.81 COL 32 COLON-ALIGNED WIDGET-ID 196 NO-TAB-STOP 
     WITH 1 DOWN NO-BOX KEEP-TAB-ORDER OVERLAY 
          SIDE-LABELS NO-UNDERLINE THREE-D 
          AT COL 1 ROW 1
@@ -559,6 +566,7 @@ DEFINE FRAME DEFAULT-FRAME
 
 /* DEFINE FRAME statement is approaching 4K Bytes.  Breaking it up   */
 DEFINE FRAME DEFAULT-FRAME
+     filDiscountBillAmount AT ROW 13.81 COL 32 COLON-ALIGNED WIDGET-ID 196 NO-TAB-STOP 
      btnBulkBilling AT ROW 4.69 COL 2.43 WIDGET-ID 198 NO-TAB-STOP 
      filAmountPure AT ROW 20.58 COL 6.72 COLON-ALIGNED WIDGET-ID 200 NO-TAB-STOP 
      "Discount for Item" VIEW-AS TEXT
@@ -573,7 +581,7 @@ DEFINE FRAME DEFAULT-FRAME
           SIZE 1.57 BY .88 AT ROW 19.42 COL 43.57 WIDGET-ID 194
      RECT-11 AT ROW 3.5 COL 1.43 WIDGET-ID 138
      RECT-12 AT ROW 6 COL 1.43 WIDGET-ID 140
-     RECT-13 AT ROW 16.12 COL 1.29 WIDGET-ID 146
+     RECT-13 AT ROW 16.08 COL 1.29 WIDGET-ID 146
      ss AT ROW 1.12 COL 1.43 WIDGET-ID 164
      RECT-14 AT ROW 16.08 COL 1.29 WIDGET-ID 166
      RECT-16 AT ROW 12.04 COL 25 WIDGET-ID 184
@@ -635,6 +643,12 @@ ELSE {&WINDOW-NAME} = CURRENT-WINDOW.
    FRAME-NAME Custom                                                    */
 /* BROWSE-TAB brwBill btnDelBill DEFAULT-FRAME */
 /* BROWSE-TAB brw filDiscountedAmount DEFAULT-FRAME */
+ASSIGN 
+       brw:ALLOW-COLUMN-SEARCHING IN FRAME DEFAULT-FRAME = TRUE.
+
+ASSIGN 
+       brwBill:ALLOW-COLUMN-SEARCHING IN FRAME DEFAULT-FRAME = TRUE.
+
 /* SETTINGS FOR BUTTON btnAdd IN FRAME DEFAULT-FRAME
    NO-ENABLE ALIGN-R                                                    */
 /* SETTINGS FOR BUTTON btnCancel IN FRAME DEFAULT-FRAME
@@ -689,8 +703,13 @@ ELSE {&WINDOW-NAME} = CURRENT-WINDOW.
    NO-ENABLE                                                            */
 /* SETTINGS FOR FILL-IN filExpP IN FRAME DEFAULT-FRAME
    NO-ENABLE                                                            */
-/* SETTINGS FOR FILL-IN filGoodP IN FRAME DEFAULT-FRAME
+/* SETTINGS FOR FILL-IN filGRRD IN FRAME DEFAULT-FRAME
    NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN filGRST IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+ASSIGN 
+       filGRST:HIDDEN IN FRAME DEFAULT-FRAME           = TRUE.
+
 /* SETTINGS FOR FILL-IN filKg IN FRAME DEFAULT-FRAME
    NO-ENABLE                                                            */
 /* SETTINGS FOR FILL-IN filLorriesP IN FRAME DEFAULT-FRAME
@@ -832,7 +851,8 @@ DO:
         cmbName        =  STRING(item#) .   
         filKg          =  weight        .   
         filPieses      =  pieses        .   
-        filGoodP       =  goodreturnP .
+        filGRRD        =  GRRD          .
+        filGRST        =  GRST          .
         filDamP        =  damP          .   
         filExpP        =  expP          .   
         filAmount      =  valu          . 
@@ -846,7 +866,8 @@ DISPLAY filDiscountItem filRecipt#
         cmbName   
         filKg     
         filPieses 
-        filGoodP  
+        filGRRD 
+        filGRST
         filDamP   
         filExpP   
         filAmount
@@ -875,8 +896,6 @@ DO:
     DO:
         tempDiscountTol = 0.
         tempDiscountItems = 0.
-
-        ASSIGN
         cmbArea             = bills.areaCode.   
         cmbCus              = bills.cusID.
         cmbEmp              = bills.empCode.
@@ -885,9 +904,12 @@ DO:
         filBill#            = bills.bill#.
         filBillNo           = bills.BillNo.
         calendr:VALUE       = bills.bilDate.
-        filPaid             = bills.paidAmount.
         filDiscountRate     = bills.discountRate.
         filVarience         = bills.varience.
+        FOR EACH Payments WHERE Payments.bill# = bills.bill# AND Payments.PayMethod = "Cash" AND Payments.stat = YES.
+            ACCUMULATE Payments.Amount(TOTAL).
+        END.
+        filPaid             = ACCUM TOTAL Payments.Amount.
 
         DISPLAY filDiscountBill WITH FRAME {&FRAME-NAME}.
       
@@ -902,8 +924,8 @@ DO:
                     tt-sale.weight          = recipts.weight
                     tt-sale.cases           = recipts.cases
                     tt-sale.pieses          = recipts.pieses
-                    tt-sale.goodReturnC     = recipts.goodReturnC
-                    tt-sale.goodreturnP     = recipts.goodreturnP
+                    tt-sale.GRRD            = recipts.GRRD
+                    tt-sale.GRST            = recipts.GRST
                     tt-sale.damageC         = recipts.damageC
                     tt-sale.damP            = recipts.damP 
                     tt-sale.expC            = recipts.expC
@@ -999,7 +1021,8 @@ DO:
       filDamP      = 0
       filUnitPrice = 0
       filExpP      = 0
-      filGoodP     = 0
+      filGRRD      = 0
+      filGRST      = 0
       filKg        = 0
       filPieses    = 0
       filRecipt#   = tempReciptID
@@ -1009,15 +1032,15 @@ DO:
       filDiscountRateItem = 0
       filAmountPure = 0
         .
-  ENABLE filDiscountRateItem btnCancel btnSave cmbName filDamP filExpP filGoodP filPieses WITH FRAME DEFAULT-FRAME . 
+  ENABLE filGRRD filDiscountRateItem btnCancel btnSave cmbName filDamP filExpP filGRST filPieses WITH FRAME DEFAULT-FRAME . 
   calendr:ENABLED = FALSE.
   DISABLE filBillNo filVarience 
       filDiscountRate cmbArea cmbCus cmbEmp cmbVeh
       brw btnAdd btnDel btnMod btnCancelBill btnSaveBill WITH FRAME DEFAULT-FRAME.
 
-  DISPLAY filDiscountRateItem btnCancel btnSave filCasePrice cmbName
+  DISPLAY filGRRD filDiscountRateItem btnCancel btnSave filCasePrice cmbName
           filAmount filBill# filDamP filExpP 
-          filGoodP filKg filPieses filRecipt# filTotal filUnitPrice WITH FRAME DEFAULT-FRAME.
+          filGRST filKg filPieses filRecipt# filTotal filUnitPrice WITH FRAME DEFAULT-FRAME.
   addModify = "add".
   RUN itemsLoader.
 END.
@@ -1039,7 +1062,7 @@ DO:
 
     RUN bulks.
                                                                                                                                        
-    ENABLE filBillNo filDiscountRate btnAdd btnMod btnDel btnSaveBill btnCancelBill cmbCus WITH FRAME {&FRAME-NAME}.
+    ENABLE filPaid filBillNo filDiscountRate btnAdd btnMod btnDel btnSaveBill btnCancelBill cmbCus WITH FRAME {&FRAME-NAME}.
     DISABLE btnBulkBilling btnPayment brwBill btnNewBill btnModBill btnDelBill WITH FRAME {&FRAME-NAME}.
 END.
 
@@ -1061,7 +1084,8 @@ DO:
         filDamP      = 0
         filUnitPrice = 0
         filExpP      = 0
-        filGoodP     = 0
+        filGRRD      = 0
+        filGRST      = 0
         filKg        = 0
         filPieses    = 0
         filRecipt#   = tempReciptID
@@ -1076,10 +1100,10 @@ DO:
         OPEN QUERY brw FOR EACH tt-sale BY tt-sale.SortID.
         APPLY "VALUE-CHANGED":U TO brw.
 
-        DISABLE filDiscountRateItem filDiscountRate btnCancel btnSave cmbName filDamP filExpP filGoodP filPieses WITH FRAME DEFAULT-FRAME . 
+        DISABLE filGRRD filDiscountRateItem filDiscountRate btnCancel btnSave cmbName filDamP filExpP filGRST filPieses WITH FRAME DEFAULT-FRAME . 
         ENABLE filVarience brw btnAdd btnDel btnMod btnCancelBill btnSaveBill WITH FRAME DEFAULT-FRAME.
-        DISPLAY filDiscountedTotal btnCancel btnSave filCasePrice cmbName filAmount 
-            filBill# filDamP filExpP filGoodP filKg filPieses filRecipt# filTotal filUnitPrice WITH FRAME DEFAULT-FRAME.
+        DISPLAY filGRRD filDiscountedTotal btnCancel btnSave filCasePrice cmbName filAmount 
+            filBill# filDamP filExpP filGRST filKg filPieses filRecipt# filTotal filUnitPrice WITH FRAME DEFAULT-FRAME.
     END.
 
 END.
@@ -1113,7 +1137,8 @@ DO:
             cmbName               = "0".
             filKg                 = 0.
             filPieses             = 0.
-            filGoodP              = 0.
+            filGRRD               = 0.
+            filGRST               = 0.
             filDamP               = 0.
             filExpP               = 0.
             filDiscountedAmount   = 0.
@@ -1121,7 +1146,6 @@ DO:
             filDiscountRateItem   = 0.
             filDiscountBillAmount = 0.
             filPerCase            = 0.
-            filStockP             = 0.
             filCasePrice          = 0.
             cmbArea               = 0.
             cmbCus                = 0.
@@ -1143,7 +1167,7 @@ DO:
             cmbArea cmbCus cmbEmp cmbVeh 
             btnCancelBill btnSaveBill
             btnAdd btnDel btnMod btnCancel btnSave
-             cmbName filDamP filExpP filGoodP filPieses WITH FRAME DEFAULT-FRAME . 
+             cmbName filDamP filExpP filGRRD filGRST filPieses WITH FRAME DEFAULT-FRAME . 
         ENABLE btnSearch btnBulkBilling btnPayment
              brwBill
              btnDelBill btnModBill btnNewBill
@@ -1155,7 +1179,8 @@ DO:
             cmbName              
             filKg                
             filPieses            
-            filGoodP             
+            filGRRD             
+            filGRST             
             filDamP              
             filExpP              
             filDiscountedAmount  
@@ -1163,7 +1188,6 @@ DO:
             filDiscountRateItem  
             filDiscountBillAmount
             filPerCase      
-            filStockP       
             filCasePrice    
             cmbArea         
             cmbCus          
@@ -1266,19 +1290,21 @@ END.
 ON CHOOSE OF btnMod IN FRAME DEFAULT-FRAME /* Modify Item > */
 DO:
   DEFINE VARIABLE tempSaleP  AS INTEGER     NO-UNDO.
-  DEFINE VARIABLE tempGDP    AS INTEGER     NO-UNDO.
+  DEFINE VARIABLE tempGRRD    AS INTEGER     NO-UNDO.
+  DEFINE VARIABLE tempGRST    AS INTEGER     NO-UNDO.
   DEFINE VARIABLE tempDamP   AS INTEGER     NO-UNDO.
   DEFINE VARIABLE tempExpP   AS INTEGER     NO-UNDO.
 
   IF cmbName <> "0" THEN
   DO:
-      ENABLE  filDiscountRateItem filDiscountRate btnCancel btnSave filDamP filExpP filGoodP filPieses WITH FRAME DEFAULT-FRAME . 
+      ENABLE filGRST filDiscountRateItem filDiscountRate btnCancel btnSave filDamP filExpP filGRRD filPieses WITH FRAME DEFAULT-FRAME . 
       DISABLE filVarience brw btnAdd btnDel btnMod btnCancelBill btnSaveBill WITH FRAME DEFAULT-FRAME.
 
       addModify = "modify".
 
       tempSaleP = filPieses.
-      tempGDP   = filGoodP.
+      tempGRRD  = filGRRD.
+      tempGRST  = filGRST.
       tempDamP  = filDamP.
       tempExpP  = filExpP.
 
@@ -1295,12 +1321,25 @@ END.
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL btnModBill C-Win
 ON CHOOSE OF btnModBill IN FRAME DEFAULT-FRAME /* Modify Bill */
 DO:
+    DEFINE VARIABLE tmpDate AS DATE        NO-UNDO .
+    tmpDate = calendr:VALUE.
+
     IF filRecipt# = 0 THEN
     DO:
         MESSAGE "Select a bill first." SKIP
             "Double click to select." VIEW-AS ALERT-BOX INFO BUTTONS OK.
         RETURN.
     END.
+
+    FIND FIRST BSSave WHERE datez = tmpDate AND BSSave.vehNo = cmbVeh NO-LOCK NO-ERROR.
+    IF AVAILABLE BSSave THEN
+    DO:
+        MESSAGE "You can not edit this record." SKIP 
+            "BS has been saved for this bill" VIEW-AS ALERT-BOX INFO BUTTONS OK.
+        RUN logger.r("Bill edit attempt after BSSave for bill " + STRING(filBillNo) + " : ID" + STRING(filRecipt#)).
+        RETURN.
+    END.
+
     addModifyBill = "modify".
 /*     RUN cusLoader. */
     calendr:ENABLED = TRUE.
@@ -1346,7 +1385,8 @@ DO:
     filDamP             = 0  .
     filUnitPrice        = 0  .
     filExpP             = 0  .
-    filGoodP            = 0  .
+    filGRRD            = 0  .
+    filGRST            = 0  .
     filKg               = 0  .
     filPieses           = 0  .
     filRecipt#          = 0  .
@@ -1365,7 +1405,7 @@ DO:
     EMPTY TEMP-TABLE tt-sale.
     OPEN QUERY brw FOR EACH tt-sale.
 
-    ENABLE filVarience filBillNo filDiscountRate btnAdd btnMod btnDel btnSaveBill btnCancelBill cmbArea cmbCus cmbEmp cmbVeh WITH FRAME {&FRAME-NAME}.
+    ENABLE filPaid filVarience filBillNo filDiscountRate btnAdd btnMod btnDel btnSaveBill btnCancelBill cmbArea cmbCus cmbEmp cmbVeh WITH FRAME {&FRAME-NAME}.
     calendr:ENABLED = TRUE.
     
     DISABLE btnSearch btnBulkBilling btnPayment brwBill btnNewBill btnModBill btnDelBill WITH FRAME {&FRAME-NAME}.
@@ -1375,7 +1415,8 @@ DO:
         filDamP            
         filUnitPrice       
         filExpP            
-        filGoodP           
+        filGRRD           
+        filGRST           
         filKg              
         filPieses          
         filRecipt#         
@@ -1420,7 +1461,7 @@ DO:
       MESSAGE "Item Name cannot be a blank." VIEW-AS ALERT-BOX INFO BUTTONS OK .
       RETURN.
   END.
-  IF filPieses = 0 AND filGoodP = 0 AND filDamP = 0 AND filExpP= 0 THEN
+  IF filPieses = 0 AND filGRRD = 0 AND filGRST = 0 AND filDamP = 0 AND filExpP= 0 THEN
   DO:
       MESSAGE "Enter some values first." VIEW-AS ALERT-BOX INFO BUTTONS OK.
       RETURN.
@@ -1439,12 +1480,6 @@ DO:
             RETURN.
         END.
   RELEASE tt-sale.
-/*   IF ((filStockP  - filPieses) + filGoodP) < 0 THEN                                                                 */
-/*   DO:                                                                                                               */
-/*       MESSAGE "Incorrect Quantity combination in <Sale P> and <Good Rtrn P>." VIEW-AS ALERT-BOX WARNING BUTTONS OK. */
-/*       RETURN.                                                                                                       */
-/*   END.                                                                                                              */
-
   
 
   MESSAGE "Conferm to save the record?" VIEW-AS ALERT-BOX INFO BUTTONS YES-NO UPDATE yn AS LOGICAL.
@@ -1460,7 +1495,8 @@ DO:
             tt-sale.itmName = itemsName
             weight          = filKg
             pieses          = filPieses
-            goodreturnP     = filGoodP
+            GRRD            = filGRRD
+            GRST            = filGRST
             damP            = filDamP
             expP            = filExpP
             amount          = filDiscountedAmount
@@ -1487,7 +1523,8 @@ DO:
                 tt-sale.itmName = itemsName
                 weight          = filKg
                 pieses          = filPieses
-                goodreturnP     = filGoodP
+                GRRD            = filGRRD
+                GRST            = filGRST
                 damP            = filDamP
                 expP            = filExpP
                 amount          = filDiscountedAmount
@@ -1499,9 +1536,10 @@ DO:
                                                                                        
         RUN calTolDiscount.
 
-        DISABLE filDiscountRateItem btnCancel btnSave cmbName filDamP filExpP filGoodP filPieses WITH FRAME DEFAULT-FRAME . 
+        DISABLE filGRST filDiscountRateItem btnCancel btnSave cmbName filDamP filExpP filGRRD filPieses WITH FRAME DEFAULT-FRAME . 
         ENABLE filVarience brw btnAdd btnDel btnMod btnCancelBill btnSaveBill WITH FRAME DEFAULT-FRAME.
-        DISPLAY filDiscountedTotal filDiscountRateItem filDiscountedTotal btnCancel btnSave filCasePrice cmbName filAmount filBill# filDamP filExpP filGoodP filKg filPieses filRecipt# filTotal filUnitPrice WITH FRAME DEFAULT-FRAME.
+        DISPLAY filGRST filGRRD filDiscountedTotal filDiscountRateItem filDiscountedTotal btnCancel btnSave 
+            filCasePrice cmbName filAmount filBill# filDamP filExpP filKg filPieses filRecipt# filTotal filUnitPrice WITH FRAME DEFAULT-FRAME.
 
         OPEN QUERY brw FOR EACH tt-sale  BY tt-sale.SortID.
         APPLY "VALUE-CHANGED":U TO brw.
@@ -1519,6 +1557,11 @@ DO:
     DEFINE VARIABLE tempP AS INTEGER     NO-UNDO.
     DEFINE VARIABLE tempPC AS INTEGER     NO-UNDO.
 
+    IF filPaid > filDiscountedTotal THEN
+    DO:
+        MESSAGE "Invalid Cash payment." VIEW-AS ALERT-BOX WARNING BUTTONS OK TITLE "Inventry Control Syatem".
+        RETURN.
+    END.
     IF (DATE(calendr:VALUE) - TODAY) > 0 THEN
     DO:
         MESSAGE "Incorrect Date." SKIP "You cannot Bill for a future Date." VIEW-AS ALERT-BOX WARNING BUTTONS OK TITLE "Inventry Control Syatem".
@@ -1580,22 +1623,32 @@ DO:
                 tol          = filDiscountedTotal .
                 vehNo        = cmbVeh             .
                 discountRate = filDiscountRate    .
-                paidAmount   = filPaid           .
-          bills.cusName      = tempCusName.
-          bills.varience     = filVarience.
+                paidAmount   = filPaid            .
+          bills.cusName      = tempCusName        .
+          bills.varience     = filVarience        .
           bills.discountedAmount = filDiscountBillAmount.
         
             FIND FIRST paramtrs WHERE NAME = "lastbill#" EXCLUSIVE-LOCK NO-ERROR.
                 paramtrs.val = STRING(filBill#).
             RELEASE paramtrs.
+
+                IF filPaid > 0 THEN
+                DO:
+                    CREATE Payments.
+                     Payments.stat       = YES.
+                     Payments.PayMethod  = "Cash".
+                     FIND FIRST paramtrs WHERE NAME = "PaymentID" EXCLUSIVE-LOCK NO-ERROR.
+                        Payments.PaymentID  = int(paramtrs.val) + 1.
+                        paramtrs.val  = String(int(paramtrs.val) + 1).
+                     RELEASE paramtrs.
+                     Payments.date       = DATE(calendr:VALUE).
+                     Payments.CusID      = cmbCus.
+                     Payments.bill#      = filBill#.
+                     Payments.Amount     = filPaid.
+                END.
+
         
             FOR EACH tt-sale.
-/*                 FIND FIRST itms WHERE itms.itmID = tt-sale.item#.             */
-/*                     tempPC = itms.stockP + (itms.stockC * itms.unitsPerCase). */
-/*                     tempP = (tempPC - filPieses) + filGoodP.                  */
-/*                     itms.stockP = tempP MODULO itms.unitsPerCase.             */
-/*                     itms.stockC = TRUNCATE(tempP / itms.unitsPerCase,0).      */
-/*                 RELEASE itms.                                                 */
 
                 CREATE recipts.
                     recipts.amount      = tt-sale.amount       .
@@ -1605,8 +1658,8 @@ DO:
                     recipts.damP        = tt-sale.damP         .
                     recipts.expC        = tt-sale.expC         .
                     recipts.expP        = tt-sale.expP         .
-                    recipts.goodReturnC = tt-sale.goodReturnC  .
-                    recipts.goodreturnP = tt-sale.goodreturnP  .
+                    recipts.GRRD        = tt-sale.GRRD         .
+                    recipts.GRST        = tt-sale.GRST         .
                     recipts.item#       = tt-sale.item#        .
                     recipts.itmName     = tt-sale.itmName      .
                     recipts.pieses      = tt-sale.pieses       .
@@ -1659,8 +1712,8 @@ DO:
                     recipts.damP        = tt-sale.damP         .
                     recipts.expC        = tt-sale.expC         .
                     recipts.expP        = tt-sale.expP         .
-                    recipts.goodReturnC = tt-sale.goodReturnC  .
-                    recipts.goodreturnP = tt-sale.goodreturnP  .
+                    recipts.GRRD        = tt-sale.GRRD         .
+                    recipts.GRST        = tt-sale.GRST         .
                     recipts.item#       = tt-sale.item#        .
                     recipts.itmName     = tt-sale.itmName      .
                     recipts.pieses      = tt-sale.pieses       .
@@ -1673,32 +1726,22 @@ DO:
         END.
 
         calendr:ENABLED = FALSE.
-        DISABLE filVarience
+        DISABLE filVarience filPaid
 /*             brw */ filBillNo
             filDiscountRate
             cmbArea cmbCus cmbEmp cmbVeh 
             btnCancelBill btnSaveBill
             btnAdd btnDel btnMod btnCancel btnSave
-             cmbName filDamP filExpP filGoodP filPieses WITH FRAME DEFAULT-FRAME . 
+             cmbName filDamP filExpP filGRRD filGRST filPieses WITH FRAME DEFAULT-FRAME . 
         ENABLE btnSearch btnPayment btnBulkBilling
              brwBill
              btnDelBill btnModBill btnNewBill
              WITH FRAME DEFAULT-FRAME.
-        DISPLAY filDiscountRateItem btnCancel btnSave filCasePrice cmbName filAmount filBill# filDamP filExpP filGoodP filKg filPieses filRecipt# filTotal filUnitPrice WITH FRAME DEFAULT-FRAME.
+        DISPLAY filPaid filDiscountRateItem btnCancel btnSave filCasePrice cmbName filAmount filBill# filDamP filExpP filGRRD filGRST filKg filPieses filRecipt# filTotal filUnitPrice WITH FRAME DEFAULT-FRAME.
 
         EMPTY TEMP-TABLE tt-sale.
         APPLY "CHOOSE":U TO btnSearch.
         OPEN QUERY brw FOR EACH tt-sale.
-/*         APPLY "VALUE-CHANGED":U TO brw. */
-
-/*         OPEN QUERY brwBill FOR                                                                  */
-/*             EACH ics.bills NO-LOCK,                                                             */
-/*             EACH ics.area WHERE area.ID = bills.areaCode NO-LOCK,                               */
-/*             EACH ics.customer WHERE customer.cusID = bills.cusID NO-LOCK,                       */
-/*             EACH ics.vehical WHERE vehical.ID = bills.vehNo NO-LOCK  BY bills.bill# DESCENDING. */
-
-        
-/*         APPLY "VALUE-CHANGED":U TO brwBill. */
 
         IF NOT ERROR-STATUS:ERROR THEN MESSAGE "Record successfully created." VIEW-AS ALERT-BOX INFO BUTTONS OK.
         IF ERROR-STATUS:ERROR THEN MESSAGE "Record saved with some errors." SKIP ERROR-STATUS VIEW-AS ALERT-BOX INFO BUTTONS OK.
@@ -1873,7 +1916,7 @@ END.
 PROCEDURE CtrlFrame-2.DTPicker.Change .
 cmbArea = WEEKDAY(calendr:VALUE) - 1.
 RUN cusLoader.
-  DISPLAY cmbArea WITH FRAME {&FRAME-NAME}.
+DISPLAY cmbArea WITH FRAME {&FRAME-NAME}.
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */
@@ -2108,16 +2151,6 @@ ON LEAVE OF filDiscountRateItem IN FRAME DEFAULT-FRAME
 DO:
    ASSIGN {&SELF-NAME}.
     RUN calAmount.
-    
-/*     IF filDiscountedAmount > filAmount THEN                                                               */
-/*     DO:                                                                                                   */
-/*         MESSAGE "No Discount For this Item." SKIP                                                         */
-/*             "Limit exceded." SKIP "(Amount = " + STRING(filDiscountedAmount,">,>>>,>>>,>>9.99") + " Rs.)" */
-/*             VIEW-AS ALERT-BOX WARNING BUTTONS OK.                                                         */
-/*         filDiscountedAmount = filAmount.                                                                  */
-/*     END.                                                                                                  */
-/*    DISPLAY filDiscountedAmount WITH FRAME {&FRAME-NAME}.                                                  */
-   
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -2160,9 +2193,9 @@ END.
 &ANALYZE-RESUME
 
 
-&Scoped-define SELF-NAME filGoodP
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL filGoodP C-Win
-ON LEAVE OF filGoodP IN FRAME DEFAULT-FRAME /* GR P */
+&Scoped-define SELF-NAME filGRRD
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL filGRRD C-Win
+ON LEAVE OF filGRRD IN FRAME DEFAULT-FRAME /* GRRD P */
 DO:
 /*     ASSIGN {&SELF-NAME}. */
 /*     RUN calAmount.       */
@@ -2172,8 +2205,31 @@ END.
 &ANALYZE-RESUME
 
 
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL filGoodP C-Win
-ON VALUE-CHANGED OF filGoodP IN FRAME DEFAULT-FRAME /* GR P */
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL filGRRD C-Win
+ON VALUE-CHANGED OF filGRRD IN FRAME DEFAULT-FRAME /* GRRD P */
+DO:
+  ASSIGN {&SELF-NAME}.
+    RUN calAmount.
+END.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
+&Scoped-define SELF-NAME filGRST
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL filGRST C-Win
+ON LEAVE OF filGRST IN FRAME DEFAULT-FRAME /* GRST P */
+DO:
+/*     ASSIGN {&SELF-NAME}. */
+/*     RUN calAmount.       */
+END.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL filGRST C-Win
+ON VALUE-CHANGED OF filGRST IN FRAME DEFAULT-FRAME /* GRST P */
 DO:
   ASSIGN {&SELF-NAME}.
     RUN calAmount.
@@ -2208,12 +2264,12 @@ END.
 
 &Scoped-define SELF-NAME filPaid
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL filPaid C-Win
-ON LEAVE OF filPaid IN FRAME DEFAULT-FRAME /* Paid */
+ON LEAVE OF filPaid IN FRAME DEFAULT-FRAME /* Cash */
 DO:
     ASSIGN {&SELF-NAME}.
     IF {&SELF-NAME} > filDiscountedTotal THEN
     DO:
-        MESSAGE "Paid amount is over Total." VIEW-AS ALERT-BOX WARNING BUTTONS OK.
+        MESSAGE "Paid amount is over Total." VIEW-AS ALERT-BOX INFO BUTTONS OK.
         RETURN.
     END.
 END.
@@ -2478,13 +2534,13 @@ returnP        = 0.
 excludeAmount  = 0.
 DiscountValue  = 0.
 
-tempGRAmount = filUnitPrice * filGoodP.
+tempGRAmount = filUnitPrice * ( filGRRD +  filGRST).
 
 /* temp Value*/
-tempValue     = ( filUnitPrice * ( filPieses - ( filGoodP + filDamP + filExpP ) ) ).
+tempValue     = ( filUnitPrice * ( filPieses - ( filGRRD +  filGRST + filDamP + filExpP ) ) ).
 filAmount     = tempValue.
 /*Total returns Count*/
-returnP       = ( filDamP + filExpP + filGoodP ).
+returnP       = ( filDamP + filExpP + filGRRD +  filGRST ).
 /*Non discountable amount*/
 excludeAmount = ( returnP * filUnitPrice ).
 /*Discounted Discountable value*/
@@ -2726,12 +2782,13 @@ PROCEDURE enable_UI :
                Settings" section of the widget Property Sheets.
 ------------------------------------------------------------------------------*/
   RUN control_load.
-  DISPLAY filBillNo cmbArea cmbCus cmbVeh cmbEmp filDiscountRate filVarience 
-          filPaid filDiscountRateItem cmbName filPieses filDamP filExpP filGoodP 
-          filStockP filLorriesP filBill# cmbSearchCol cmbSearchTime filTotal 
-          filDiscountedTotal filDiscountedAmount filAmount filSearch filRecipt# 
-          filKg filUnitPrice filCasePrice cmbSearchArea filPerCase 
-          filDiscountBill filDiscountItem filDiscountBillAmount filAmountPure 
+  DISPLAY filBillNo cmbArea cmbCus cmbVeh cmbEmp filDiscountRate filPaid 
+          filDiscountRateItem filVarience cmbName filPieses filDamP filExpP 
+          filGRRD filGRST filStockP filLorriesP filBill# cmbSearchCol 
+          cmbSearchTime filTotal filDiscountedTotal filDiscountedAmount 
+          filAmount filSearch filRecipt# filKg filUnitPrice filCasePrice 
+          cmbSearchArea filPerCase filDiscountBill filDiscountItem 
+          filDiscountBillAmount filAmountPure 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
   ENABLE btnNewBill cmbSearchCol cmbSearchTime btnModBill btnDelBill brwBill 
          btnSearch brw filSearch btnPayment btnBulkBilling RECT-11 RECT-12 
@@ -2860,8 +2917,8 @@ DO:
         tt-sale.weight       = recipts.weight     
         tt-sale.cases        = recipts.cases      
         tt-sale.pieses       = recipts.pieses     
-        tt-sale.goodReturnC  = recipts.goodReturnC
-        tt-sale.goodreturnP  = recipts.goodreturnP
+        tt-sale.GRRD         = recipts.GRRD
+        tt-sale.GRST         = recipts.GRST
         tt-sale.damageC      = recipts.damageC    
         tt-sale.damP         = recipts.damP       
         tt-sale.expC         = recipts.expC       

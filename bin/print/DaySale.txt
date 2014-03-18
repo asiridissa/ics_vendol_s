@@ -1,6 +1,8 @@
-User :|asiri       Date : 12/03/13  |Vehical :|41-5786  Kara
-No|Item|Weight|Price|Units|BSC|BSP|LDC|LDP|ULC|ULP|RDC|RDP|BilC|BilP|Excess|Short
-5247|Goold Marie - 02/24/2013|  0.080|   26.25| 60|1|46|0|0|1|46|0|0|0|0|0|0
+ Date : 03/02/14    Vehical : 28 -  8897  Wan    By User : admin
+No|Item|Weight|Price|Units|BSC|BSP|LDC|LDP|ULC|ULP|RDC|RDP|BilP|Excs|Shrt
+1|Goold Marie - 02/24/2013|  0.080|   26.25| 60|0|50|0|10|0|55|0|10|10|0|0
+2|Chocolate Cream - 08/14/2013|  0.100|   43.25| 50|0|40|0|10|0|42|0|10|10|0|0
+3|Cream Cracker - 02/24/2013|  0.125|   45.00| 48|0|38|0|10|0|48|0|10|10|0|0
  
-|Tonnage :           2,656.990 kg
-|Value   : Rs.      1,076,347.24
+|Sales Value (Rs.)   :           1,145.00|Total Value (Rs.)   :          95,577.75
+|Sales Tonnage (kg)  :               3.050|Total Tonnage (kg)  :             259.200

@@ -8,6 +8,7 @@
 CREATE WIDGET-POOL.
 
   DEFINE VARIABLE calendr AS COM-HANDLE   NO-UNDO.
+  DEFINE VARIABLE calendrPay AS COM-HANDLE   NO-UNDO.
   DEFINE VARIABLE tempBill# AS INTEGER     NO-UNDO.
   DEFINE VARIABLE tempaymentID AS INTEGER     NO-UNDO.
 
@@ -36,17 +37,17 @@ decimal ( bills.tol - bills.paidAmount)
 &Scoped-define ENABLED-FIELDS-IN-QUERY-brwPendingBills 
 &Scoped-define QUERY-STRING-brwPendingBills FOR EACH bills NO-LOCK ~
     BY bills.bilDate DESCENDING ~
-       BY bills.BillNo DESCENDING INDEXED-REPOSITION
+       BY bills.BillNo INDEXED-REPOSITION
 &Scoped-define OPEN-QUERY-brwPendingBills OPEN QUERY brwPendingBills FOR EACH bills NO-LOCK ~
     BY bills.bilDate DESCENDING ~
-       BY bills.BillNo DESCENDING INDEXED-REPOSITION.
+       BY bills.BillNo INDEXED-REPOSITION.
 &Scoped-define TABLES-IN-QUERY-brwPendingBills bills
 &Scoped-define FIRST-TABLE-IN-QUERY-brwPendingBills bills
 
 
 /* Definitions for BROWSE brwTransHistory                               */
-&Scoped-define FIELDS-IN-QUERY-brwTransHistory Payments.PaymentID ~
-Payments.Amount Payments.PayMethod Payments.date Payments.stat 
+&Scoped-define FIELDS-IN-QUERY-brwTransHistory Payments.stat ~
+Payments.datePay Payments.PayMethod Payments.Amount Payments.ModifiedDate 
 &Scoped-define ENABLED-FIELDS-IN-QUERY-brwTransHistory 
 &Scoped-define QUERY-STRING-brwTransHistory FOR EACH Payments NO-LOCK, ~
       EACH customer WHERE customer.cusID = Payments.CusID NO-LOCK INDEXED-REPOSITION
@@ -62,11 +63,11 @@ Payments.Amount Payments.PayMethod Payments.date Payments.stat
     ~{&OPEN-QUERY-brwPendingBills}
 
 /* Standard List Definitions                                            */
-&Scoped-Define ENABLED-OBJECTS btnSelect btnSelectPayment brwPendingBills ~
-tickShowPaid filSearch cmbArea filBillNo cmbCus RECT-16 RECT-17 RECT-18 ~
-RECT-20 
-&Scoped-Define DISPLAYED-OBJECTS radPayType filAmount tickShowPaid ~
-filSearch cmbArea filBillNo cmbCus 
+&Scoped-Define ENABLED-OBJECTS btnSearch filIgnore btnSelect ~
+btnSelectPayment brwPendingBills tickShowPaid filSearch btnReset RECT-16 ~
+RECT-17 RECT-18 RECT-19 RECT-20 
+&Scoped-Define DISPLAYED-OBJECTS filIgnore radPayType filAmount ~
+tickShowPaid filSearch cmbArea filBillNo cmbCus 
 
 /* Custom List Definitions                                              */
 /* List-1,List-2,List-3,List-4,List-5,List-6                            */
@@ -81,9 +82,24 @@ filSearch cmbArea filBillNo cmbCus
 /* Define the widget handle for the window                              */
 DEFINE VAR C-Win AS WIDGET-HANDLE NO-UNDO.
 
+/* Menu Definitions                                                     */
+DEFINE SUB-MENU m_a 
+       MENU-ITEM m_aa           LABEL "aa"            .
+
+DEFINE SUB-MENU m_b 
+       MENU-ITEM m_bb           LABEL "bb"            .
+
+DEFINE MENU POPUP-MENU-brwPendingBills TITLE "Pop"
+       SUB-MENU  m_a            LABEL "a"             
+       RULE
+       SUB-MENU  m_b            LABEL "b"             .
+
+
 /* Definitions of handles for OCX Containers                            */
 DEFINE VARIABLE CtrlFrame-2 AS WIDGET-HANDLE NO-UNDO.
 DEFINE VARIABLE chCtrlFrame-2 AS COMPONENT-HANDLE NO-UNDO.
+DEFINE VARIABLE CtrlFrame-3 AS WIDGET-HANDLE NO-UNDO.
+DEFINE VARIABLE chCtrlFrame-3 AS COMPONENT-HANDLE NO-UNDO.
 
 /* Definitions of the field level widgets                               */
 DEFINE BUTTON btnCancel 
@@ -98,9 +114,17 @@ DEFINE BUTTON btnPay
      LABEL "Pay" 
      SIZE 15 BY 1.
 
+DEFINE BUTTON btnReset 
+     LABEL "Refresh" 
+     SIZE 8 BY 1 TOOLTIP "Refresh Grids".
+
 DEFINE BUTTON btnRevert 
      LABEL "Revert" 
      SIZE 15 BY 1.
+
+DEFINE BUTTON btnSearch 
+     LABEL "Search" 
+     SIZE 8 BY 1 TOOLTIP "Search by Customer  or Bill No.".
 
 DEFINE BUTTON btnSelect 
      LABEL "Select Bill" 
@@ -135,13 +159,19 @@ DEFINE VARIABLE filAmount AS DECIMAL FORMAT ">,>>>,>>9.99":U INITIAL 0
 DEFINE VARIABLE filBillNo AS INTEGER FORMAT ">>>>>>9":U INITIAL 0 
      LABEL "BillNo" 
      VIEW-AS FILL-IN 
-     SIZE 7 BY .88
-     BGCOLOR 15 FGCOLOR 0 FONT 10 NO-UNDO.
+     SIZE 9 BY .88
+     BGCOLOR 7 FGCOLOR 11 FONT 10 NO-UNDO.
+
+DEFINE VARIABLE filIgnore AS DECIMAL FORMAT ">>>,>>9.99":U INITIAL .99 
+     LABEL "To Pay Amount greater than" 
+     VIEW-AS FILL-IN 
+     SIZE 12 BY .88 TOOLTIP "Grid will only load bills that To pay amount is Greater than this Value"
+     BGCOLOR 15 FGCOLOR 12  NO-UNDO.
 
 DEFINE VARIABLE filSearch AS CHARACTER FORMAT "X(256)":U 
      LABEL "Search" 
      VIEW-AS FILL-IN 
-     SIZE 35 BY .88
+     SIZE 25 BY .88
      BGCOLOR 15 FONT 10 NO-UNDO.
 
 DEFINE VARIABLE radPayType AS CHARACTER INITIAL "Cash" 
@@ -150,11 +180,11 @@ DEFINE VARIABLE radPayType AS CHARACTER INITIAL "Cash"
           "Cash", "Cash",
 "Credit", "Credit",
 "Cheque", "Cheque"
-     SIZE 27.29 BY .85 NO-UNDO.
+     SIZE 24.29 BY .85 NO-UNDO.
 
 DEFINE RECTANGLE RECT-16
      EDGE-PIXELS 1 GRAPHIC-EDGE  NO-FILL  GROUP-BOX  ROUNDED 
-     SIZE 59 BY 6.46.
+     SIZE 59 BY 6.54.
 
 DEFINE RECTANGLE RECT-17
      EDGE-PIXELS 1 GRAPHIC-EDGE  NO-FILL  GROUP-BOX  
@@ -162,11 +192,15 @@ DEFINE RECTANGLE RECT-17
 
 DEFINE RECTANGLE RECT-18
      EDGE-PIXELS 1 GRAPHIC-EDGE  NO-FILL  GROUP-BOX  
+     SIZE 59 BY 2.69.
+
+DEFINE RECTANGLE RECT-19
+     EDGE-PIXELS 1 GRAPHIC-EDGE  NO-FILL  GROUP-BOX  ROUNDED 
      SIZE 59 BY 3.31.
 
 DEFINE RECTANGLE RECT-20
      EDGE-PIXELS 1 GRAPHIC-EDGE  NO-FILL  GROUP-BOX  ROUNDED 
-     SIZE 59 BY 1.69.
+     SIZE 59 BY 1.38.
 
 DEFINE VARIABLE tickShowPaid AS LOGICAL INITIAL no 
      LABEL "Show Paid Bills also" 
@@ -187,9 +221,9 @@ DEFINE QUERY brwTransHistory FOR
 DEFINE BROWSE brwPendingBills
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS brwPendingBills C-Win _STRUCTURED
   QUERY brwPendingBills NO-LOCK DISPLAY
-      bills.BillNo FORMAT "999999":U WIDTH 7
-      bills.bilDate FORMAT "99/99/99":U
-      bills.cusName COLUMN-LABEL "Customer" FORMAT "x(200)":U WIDTH 50
+      bills.BillNo FORMAT ">>>>>9":U WIDTH 7
+      bills.bilDate FORMAT "99/99/99":U WIDTH 7.86
+      bills.cusName COLUMN-LABEL "Customer" FORMAT "x(200)":U WIDTH 49
       bills.tol COLUMN-LABEL "Total" FORMAT "->,>>>,>>>,>>9.99":U
       bills.paidAmount COLUMN-LABEL "Paid Amount" FORMAT "->>>,>>>,>>9.99":U
             WIDTH 16.72
@@ -197,22 +231,22 @@ DEFINE BROWSE brwPendingBills
             COLUMN-FGCOLOR 12
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
-    WITH NO-ROW-MARKERS SEPARATORS SIZE 120 BY 12.92
+    WITH NO-ROW-MARKERS SEPARATORS SIZE 120 BY 13.35
          FONT 10
-         TITLE "Pending Bills" ROW-HEIGHT-CHARS .55 FIT-LAST-COLUMN.
+         TITLE "Pending Bills" ROW-HEIGHT-CHARS .54 FIT-LAST-COLUMN TOOLTIP "Double click to select a bill".
 
 DEFINE BROWSE brwTransHistory
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS brwTransHistory C-Win _STRUCTURED
   QUERY brwTransHistory NO-LOCK DISPLAY
-      Payments.PaymentID FORMAT ">>>>>>>>>>9":U
-      Payments.Amount FORMAT ">,>>>,>>>,>>9.99":U
+      Payments.stat FORMAT "yes/no":U VIEW-AS TOGGLE-BOX
+      Payments.datePay FORMAT "99/99/9999":U
       Payments.PayMethod COLUMN-LABEL "Pay Method" FORMAT "x(20)":U
             WIDTH 11
-      Payments.date FORMAT "99/99/9999":U WIDTH 12
-      Payments.stat FORMAT "yes/no":U VIEW-AS TOGGLE-BOX
+      Payments.Amount FORMAT ">,>>>,>>>,>>9.99":U
+      Payments.ModifiedDate COLUMN-LABEL "Modified" FORMAT "99/99/9999 HH:MM":U
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
-    WITH NO-ROW-MARKERS SEPARATORS SIZE 60.43 BY 11.81
+    WITH NO-ROW-MARKERS SEPARATORS SIZE 60.43 BY 11.35
          FONT 10
          TITLE "Transaction History" ROW-HEIGHT-CHARS .55 FIT-LAST-COLUMN.
 
@@ -220,29 +254,35 @@ DEFINE BROWSE brwTransHistory
 /* ************************  Frame Definitions  *********************** */
 
 DEFINE FRAME DEFAULT-FRAME
-     btnSelect AT ROW 23.08 COL 7.72 WIDGET-ID 98
-     radPayType AT ROW 20.81 COL 17.72 NO-LABEL WIDGET-ID 116
-     filAmount AT ROW 21.73 COL 15.72 COLON-ALIGNED WIDGET-ID 102
-     btnPay AT ROW 23.08 COL 24.72 WIDGET-ID 100
-     btnCancel AT ROW 23.08 COL 41.72 WIDGET-ID 112
-     btnSelectPayment AT ROW 24.73 COL 7.72 WIDGET-ID 122
-     btnRevert AT ROW 24.73 COL 24.72 WIDGET-ID 120
-     btnCancelR AT ROW 24.73 COL 41.72 WIDGET-ID 124
+     btnSearch AT ROW 14.96 COL 39.43 WIDGET-ID 138
+     filIgnore AT ROW 16.85 COL 38.72 COLON-ALIGNED WIDGET-ID 142
+     btnSelect AT ROW 23.54 COL 7.72 WIDGET-ID 98
+     radPayType AT ROW 21.38 COL 13.57 NO-LABEL WIDGET-ID 116
+     filAmount AT ROW 22.27 COL 14 COLON-ALIGNED WIDGET-ID 102
+     btnPay AT ROW 23.54 COL 24.72 WIDGET-ID 100
+     btnCancel AT ROW 23.54 COL 41.72 WIDGET-ID 112
+     btnSelectPayment AT ROW 24.85 COL 7.72 WIDGET-ID 122
+     btnRevert AT ROW 24.88 COL 24.72 WIDGET-ID 120
+     btnCancelR AT ROW 24.88 COL 41.72 WIDGET-ID 124
      brwPendingBills AT ROW 1.12 COL 1.43 WIDGET-ID 300
-     brwTransHistory AT ROW 14.23 COL 61 WIDGET-ID 400
-     tickShowPaid AT ROW 15.42 COL 17.72 WIDGET-ID 94
-     filSearch AT ROW 14.42 COL 15.72 COLON-ALIGNED WIDGET-ID 96
-     cmbArea AT ROW 17.23 COL 15.72 COLON-ALIGNED WIDGET-ID 80
-     filBillNo AT ROW 19.38 COL 15.72 COLON-ALIGNED WIDGET-ID 104
-     cmbCus AT ROW 18.31 COL 15.72 COLON-ALIGNED WIDGET-ID 92
-     "Bill Date:" VIEW-AS TEXT
-          SIZE 7.86 BY .62 AT ROW 16.31 COL 9.57 WIDGET-ID 132
+     brwTransHistory AT ROW 14.73 COL 61 WIDGET-ID 400
+     tickShowPaid AT ROW 16.15 COL 37.72 RIGHT-ALIGNED WIDGET-ID 94
+     filSearch AT ROW 15 COL 12.14 COLON-ALIGNED WIDGET-ID 96
+     cmbArea AT ROW 19.12 COL 15.72 COLON-ALIGNED WIDGET-ID 80
+     filBillNo AT ROW 18.12 COL 15.72 COLON-ALIGNED WIDGET-ID 104
+     cmbCus AT ROW 20.19 COL 15.72 COLON-ALIGNED WIDGET-ID 92
+     btnReset AT ROW 14.96 COL 47.72 WIDGET-ID 140
+     "Date:" VIEW-AS TEXT
+          SIZE 4 BY .62 AT ROW 18.19 COL 27.57 WIDGET-ID 132
      "Payment Type:" VIEW-AS TEXT
-          SIZE 13 BY .62 AT ROW 20.88 COL 4.29 WIDGET-ID 134
-     RECT-16 AT ROW 14.19 COL 1.43 WIDGET-ID 126
-     RECT-17 AT ROW 20.58 COL 1.43 WIDGET-ID 128
-     RECT-18 AT ROW 22.73 COL 1.43 WIDGET-ID 130
-     RECT-20 AT ROW 22.73 COL 1.43 WIDGET-ID 136
+          SIZE 11.72 BY .62 AT ROW 21.46 COL 1.86 WIDGET-ID 134
+     "Date:" VIEW-AS TEXT
+          SIZE 4 BY .62 AT ROW 21.46 COL 39.43 WIDGET-ID 150
+     RECT-16 AT ROW 14.73 COL 1.43 WIDGET-ID 126
+     RECT-17 AT ROW 21.19 COL 1.43 WIDGET-ID 128
+     RECT-18 AT ROW 23.35 COL 1.43 WIDGET-ID 130
+     RECT-19 AT ROW 17.96 COL 1.43 WIDGET-ID 144
+     RECT-20 AT ROW 23.35 COL 1.43 WIDGET-ID 136
     WITH 1 DOWN NO-BOX KEEP-TAB-ORDER OVERLAY 
          SIDE-LABELS NO-UNDERLINE THREE-D 
          AT COL 1 ROW 1
@@ -300,6 +340,10 @@ ELSE {&WINDOW-NAME} = CURRENT-WINDOW.
    FRAME-NAME Custom                                                    */
 /* BROWSE-TAB brwPendingBills btnCancelR DEFAULT-FRAME */
 /* BROWSE-TAB brwTransHistory brwPendingBills DEFAULT-FRAME */
+ASSIGN 
+       brwPendingBills:POPUP-MENU IN FRAME DEFAULT-FRAME             = MENU POPUP-MENU-brwPendingBills:HANDLE
+       brwPendingBills:ALLOW-COLUMN-SEARCHING IN FRAME DEFAULT-FRAME = TRUE.
+
 /* SETTINGS FOR BROWSE brwTransHistory IN FRAME DEFAULT-FRAME
    NO-ENABLE                                                            */
 /* SETTINGS FOR BUTTON btnCancel IN FRAME DEFAULT-FRAME
@@ -310,13 +354,21 @@ ELSE {&WINDOW-NAME} = CURRENT-WINDOW.
    NO-ENABLE                                                            */
 /* SETTINGS FOR BUTTON btnRevert IN FRAME DEFAULT-FRAME
    NO-ENABLE                                                            */
+/* SETTINGS FOR COMBO-BOX cmbArea IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR COMBO-BOX cmbCus IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
 /* SETTINGS FOR FILL-IN filAmount IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN filBillNo IN FRAME DEFAULT-FRAME
    NO-ENABLE                                                            */
 ASSIGN 
        filBillNo:READ-ONLY IN FRAME DEFAULT-FRAME        = TRUE.
 
 /* SETTINGS FOR RADIO-SET radPayType IN FRAME DEFAULT-FRAME
    NO-ENABLE                                                            */
+/* SETTINGS FOR TOGGLE-BOX tickShowPaid IN FRAME DEFAULT-FRAME
+   ALIGN-R                                                              */
 IF SESSION:DISPLAY-TYPE = "GUI":U AND VALID-HANDLE(C-Win)
 THEN C-Win:HIDDEN = no.
 
@@ -330,12 +382,13 @@ THEN C-Win:HIDDEN = no.
 /* Query rebuild information for BROWSE brwPendingBills
      _TblList          = "ics.bills"
      _Options          = "NO-LOCK INDEXED-REPOSITION"
-     _OrdList          = "ics.bills.bilDate|no,ics.bills.BillNo|no"
+     _OrdList          = "ics.bills.bilDate|no,ics.bills.BillNo|yes"
      _FldNameList[1]   > ics.bills.BillNo
-"bills.BillNo" ? "999999" "int64" ? ? ? ? ? ? no ? no no "7" yes no no "U" "" "" "" "" "" "" 0 no 0 no no
-     _FldNameList[2]   = ics.bills.bilDate
+"bills.BillNo" ? ">>>>>9" "int64" ? ? ? ? ? ? no ? no no "7" yes no no "U" "" "" "" "" "" "" 0 no 0 no no
+     _FldNameList[2]   > ics.bills.bilDate
+"bills.bilDate" ? ? "date" ? ? ? ? ? ? no ? no no "7.86" yes no no "U" "" "" "" "" "" "" 0 no 0 no no
      _FldNameList[3]   > ics.bills.cusName
-"bills.cusName" "Customer" ? "character" ? ? ? ? ? ? no ? no no "50" yes no no "U" "" "" "" "" "" "" 0 no 0 no no
+"bills.cusName" "Customer" ? "character" ? ? ? ? ? ? no ? no no "49" yes no no "U" "" "" "" "" "" "" 0 no 0 no no
      _FldNameList[4]   > ics.bills.tol
 "bills.tol" "Total" "->,>>>,>>>,>>9.99" "decimal" ? ? ? ? ? ? no ? no no ? yes no no "U" "" "" "" "" "" "" 0 no 0 no no
      _FldNameList[5]   > ics.bills.paidAmount
@@ -351,15 +404,14 @@ THEN C-Win:HIDDEN = no.
      _TblList          = "ics.Payments,ics.customer WHERE ics.Payments ..."
      _Options          = "NO-LOCK INDEXED-REPOSITION"
      _JoinCode[2]      = "customer.cusID = Payments.CusID"
-     _FldNameList[1]   > ics.Payments.PaymentID
-"Payments.PaymentID" ? ">>>>>>>>>>9" "int64" ? ? ? ? ? ? no ? no no ? yes no no "U" "" "" "" "" "" "" 0 no 0 no no
-     _FldNameList[2]   = ics.Payments.Amount
+     _FldNameList[1]   > ics.Payments.stat
+"Payments.stat" ? ? "logical" ? ? ? ? ? ? no ? no no ? yes no no "U" "" "" "TOGGLE-BOX" "," ? ? 5 no 0 no no
+     _FldNameList[2]   = ics.Payments.datePay
      _FldNameList[3]   > ics.Payments.PayMethod
 "Payments.PayMethod" "Pay Method" ? "character" ? ? ? ? ? ? no ? no no "11" yes no no "U" "" "" "" "" "" "" 0 no 0 no no
-     _FldNameList[4]   > ics.Payments.date
-"Payments.date" ? ? "datetime" ? ? ? ? ? ? no ? no no "12" yes no no "U" "" "" "" "" "" "" 0 no 0 no no
-     _FldNameList[5]   > ics.Payments.stat
-"Payments.stat" ? ? "logical" ? ? ? ? ? ? no ? no no ? yes no no "U" "" "" "TOGGLE-BOX" "," ? ? 5 no 0 no no
+     _FldNameList[4]   = ics.Payments.Amount
+     _FldNameList[5]   > ics.Payments.ModifiedDate
+"Payments.ModifiedDate" "Modified" "99/99/9999 HH:MM" "datetime" ? ? ? ? ? ? no ? no no ? yes no no "U" "" "" "" "" "" "" 0 no 0 no no
      _Query            is NOT OPENED
 */  /* BROWSE brwTransHistory */
 &ANALYZE-RESUME
@@ -373,17 +425,28 @@ THEN C-Win:HIDDEN = no.
 
 &IF "{&OPSYS}" = "WIN32":U AND "{&WINDOW-SYSTEM}" NE "TTY":U &THEN
 
+CREATE CONTROL-FRAME CtrlFrame-3 ASSIGN
+       FRAME           = FRAME DEFAULT-FRAME:HANDLE
+       ROW             = 21.38
+       COLUMN          = 43.86
+       HEIGHT          = .81
+       WIDTH           = 15.86
+       WIDGET-ID       = 146
+       HIDDEN          = no
+       SENSITIVE       = yes.
+
 CREATE CONTROL-FRAME CtrlFrame-2 ASSIGN
        FRAME           = FRAME DEFAULT-FRAME:HANDLE
-       ROW             = 16.23
-       COLUMN          = 17.72
+       ROW             = 18.12
+       COLUMN          = 32.14
        HEIGHT          = .81
        WIDTH           = 20.86
        WIDGET-ID       = 72
        HIDDEN          = no
        SENSITIVE       = yes.
+/* CtrlFrame-3 OCXINFO:CREATE-CONTROL from: {20DD1B9E-87C4-11D1-8BE3-0000F8754DA1} type: DTPicker */
 /* CtrlFrame-2 OCXINFO:CREATE-CONTROL from: {20DD1B9E-87C4-11D1-8BE3-0000F8754DA1} type: DTPicker */
-      CtrlFrame-2:MOVE-AFTER(cmbArea:HANDLE IN FRAME DEFAULT-FRAME).
+      CtrlFrame-2:MOVE-AFTER(brwTransHistory:HANDLE IN FRAME DEFAULT-FRAME).
 
 &ENDIF
 
@@ -425,9 +488,9 @@ END.
 &Scoped-define BROWSE-NAME brwPendingBills
 &Scoped-define SELF-NAME brwPendingBills
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL brwPendingBills C-Win
-ON VALUE-CHANGED OF brwPendingBills IN FRAME DEFAULT-FRAME /* Pending Bills */
+ON LEFT-MOUSE-DBLCLICK OF brwPendingBills IN FRAME DEFAULT-FRAME /* Pending Bills */
 DO:
-    IF AVAILABLE bills THEN
+      IF AVAILABLE bills THEN
     DO:
         tempBill# = bills.bill#.
         filBillNo = bills.BillNo.
@@ -436,20 +499,14 @@ DO:
         cmbCus  = bills.cusID.
         calendr:VALUE = bills.bilDate.
     END.
-/*     IF AVAILABLE Payments THEN */
-/*     DO:                        */
     OPEN QUERY brwTransHistory FOR 
         EACH ics.Payments NO-LOCK,
       EACH ics.customer WHERE 
         customer.cusID = Payments.CusID AND
         bills.bill# = Payments.bill#
             NO-LOCK INDEXED-REPOSITION.
-/*     END. */
-  
-
-  DISPLAY filBillNo cmbArea cmbCus WITH FRAME {&FRAME-NAME}.
-
- 
+    
+    DISPLAY filBillNo cmbArea cmbCus WITH FRAME {&FRAME-NAME}.
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -475,8 +532,9 @@ ON CHOOSE OF btnCancel IN FRAME DEFAULT-FRAME /* Cancel */
 DO:
   DISABLE radPayType filAmount  btnPay btnCancel WITH FRAME {&FRAME-NAME}.
 
-  calendr:ENABLED = TRUE.
-  ENABLE btnSelectPayment brwPendingBills btnSelect filSearch tickShowPaid cmbArea cmbCus filBillNo  WITH FRAME {&FRAME-NAME}.
+  calendr:ENABLED = FALSE.
+  calendrPay:ENABLED = FALSE.
+  ENABLE btnSelectPayment brwPendingBills btnSelect filSearch tickShowPaid WITH FRAME {&FRAME-NAME}.
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -489,8 +547,8 @@ ON CHOOSE OF btnCancelR IN FRAME DEFAULT-FRAME /* Cancel */
 DO:
   DISABLE brwTransHistory radPayType filAmount  btnRevert btnCancelR WITH FRAME {&FRAME-NAME}.
 
-  calendr:ENABLED = TRUE.
-  ENABLE brwPendingBills btnSelectPayment btnSelect filSearch tickShowPaid cmbArea cmbCus filBillNo  WITH FRAME {&FRAME-NAME}.
+  calendr:ENABLED = FALSE.
+  ENABLE brwPendingBills btnSelectPayment btnSelect filSearch tickShowPaid WITH FRAME {&FRAME-NAME}.
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -501,6 +559,8 @@ END.
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL btnPay C-Win
 ON CHOOSE OF btnPay IN FRAME DEFAULT-FRAME /* Pay */
 DO:
+    DEFINE VARIABLE selectedCol AS INTEGER     NO-UNDO INIT 1.
+
     IF filAmount = 0 THEN
     DO:
         MESSAGE "Enter an amount first." VIEW-AS ALERT-BOX INFO BUTTONS OK.
@@ -522,7 +582,9 @@ DO:
                  Payments.bill# = bills.bill#.
                  Payments.stat = YES.
                  Payments.PayMethod = radPayType.
-                 Payments.date = TODAY.
+                 Payments.datePay = calendrPay:VALUE.
+                 Payments.CreatedDate = datetime(TODAY,MTIME).
+                 Payments.ModifiedDate = datetime(TODAY,MTIME).
                  Payments.CusID = cmbCus.
                  Payments.Amount = filAmount.
                  FIND FIRST paramtrs WHERE paramtrs.NAME = "PaymentID" EXCLUSIVE-LOCK NO-ERROR.
@@ -534,18 +596,41 @@ DO:
         RELEASE bills.
     END.
 
-
-
   DISABLE radPayType filAmount  btnPay btnCancel WITH FRAME {&FRAME-NAME}.
   filAmount = 0.
   radPayType = "Cash".
-  calendr:ENABLED = TRUE.
-  ENABLE btnSelectPayment brwPendingBills btnSelect filSearch tickShowPaid cmbArea cmbCus filBillNo  WITH FRAME {&FRAME-NAME}.
+  calendr:ENABLED = FALSE.
+  calendrPay:ENABLED = FALSE.
+  ENABLE btnSelectPayment brwPendingBills btnSelect filSearch tickShowPaid WITH FRAME {&FRAME-NAME}.
   RUN filterGrid.
   DISPLAY filAmount radPayType WITH FRAME DEFAULT-FRAME. 
+
+  selectedCol = brwPendingBills:FOCUSED-ROW.
+
   OPEN QUERY brwPendingBills FOR EACH bills NO-LOCK
     BY bills.bilDate DESCENDING
      BY bills.BillNo DESCENDING.
+
+  brwPendingBills:SELECT-ROW(selectedCol).
+
+  APPLY "LEFT-MOUSE-DBLCLICK":U TO brwPendingBills  IN FRAME DEFAULT-FRAME.
+
+  MESSAGE "Payment successful." VIEW-AS ALERT-BOX INFO BUTTONS OK.
+
+END.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
+&Scoped-define SELF-NAME btnReset
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL btnReset C-Win
+ON CHOOSE OF btnReset IN FRAME DEFAULT-FRAME /* Refresh */
+DO:
+    filSearch = "".
+    DISPLAY filSearch WITH FRAME DEFAULT-FRAME.
+  RUN filterGrid.
+
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -582,18 +667,36 @@ DO:
   DO:
       FIND FIRST Payments WHERE Payments.PaymentID = tempaymentID EXCLUSIVE-LOCK NO-ERROR.
         Payments.stat = NO.  
+        Payments.ModifiedDate = datetime(TODAY,MTIME).
           FIND FIRST bills WHERE bills.bill# = tempBill# EXCLUSIVE-LOCK NO-ERROR.
             bills.paidAmount = bills.paidAmount - Payments.Amount.
           RELEASE bills.
       RELEASE Payments.
-    RUN filterGrid.
+      RUN filterGrid.
   END.
 
 
   DISABLE brwTransHistory radPayType filAmount  btnRevert btnCancelR WITH FRAME {&FRAME-NAME}.
 
-  calendr:ENABLED = TRUE.
-  ENABLE brwPendingBills btnSelect btnSelectPayment filSearch tickShowPaid cmbArea cmbCus filBillNo  WITH FRAME {&FRAME-NAME}.
+  calendr:ENABLED = FALSE.
+  ENABLE brwPendingBills btnSelect btnSelectPayment filSearch tickShowPaid  WITH FRAME {&FRAME-NAME}.
+
+  APPLY "VALUE-CHANGED":U TO brwPendingBills  IN FRAME DEFAULT-FRAME.
+  APPLY "LEFT-MOUSE-DBLCLICK":U TO brwPendingBills  IN FRAME DEFAULT-FRAME.
+
+  MESSAGE "Payment reverted succesfully." VIEW-AS ALERT-BOX INFO BUTTONS OK.
+
+END.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
+&Scoped-define SELF-NAME btnSearch
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL btnSearch C-Win
+ON CHOOSE OF btnSearch IN FRAME DEFAULT-FRAME /* Search */
+DO:
+    RUN filterGrid.
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -607,6 +710,8 @@ DO:
   ENABLE  radPayType filAmount btnPay btnCancel WITH FRAME {&FRAME-NAME}.
 
   calendr:ENABLED = FALSE.
+  calendrPay:ENABLED = TRUE.
+
   DISABLE btnSelectPayment brwPendingBills btnSelect filSearch tickShowPaid cmbArea cmbCus filBillNo  WITH FRAME {&FRAME-NAME}.
 END.
 
@@ -713,6 +818,22 @@ END PROCEDURE.
 &ANALYZE-RESUME
 
 
+&Scoped-define SELF-NAME CtrlFrame-3
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL CtrlFrame-3 C-Win OCX.Click
+PROCEDURE CtrlFrame-3.DTPicker.Click .
+/*------------------------------------------------------------------------------
+  Purpose:     
+  Parameters:  None required for OCX.
+  Notes:       
+------------------------------------------------------------------------------*/
+
+calendr:VALUE = STRING(TODAY,"99/99/9999").
+END PROCEDURE.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
 &Scoped-define SELF-NAME filAmount
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL filAmount C-Win
 ON LEAVE OF filAmount IN FRAME DEFAULT-FRAME /* Amount */
@@ -735,12 +856,32 @@ END.
 &ANALYZE-RESUME
 
 
+&Scoped-define SELF-NAME filIgnore
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL filIgnore C-Win
+ON LEAVE OF filIgnore IN FRAME DEFAULT-FRAME /* To Pay Amount greater than */
+DO:
+  ASSIGN {&SELF-NAME}.
+END.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
 &Scoped-define SELF-NAME filSearch
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL filSearch C-Win
+ON LEAVE OF filSearch IN FRAME DEFAULT-FRAME /* Search */
+DO:
+    ASSIGN {&SELF-NAME}.
+END.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL filSearch C-Win
 ON VALUE-CHANGED OF filSearch IN FRAME DEFAULT-FRAME /* Search */
 DO:
   ASSIGN {&SELF-NAME}.
-  RUN filterGrid.
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -817,8 +958,11 @@ DO ON ERROR   UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK
   {&WINDOW-NAME}:LOAD-ICON(session_icon).
 
   calendr = chCtrlFrame-2:DTPicker.
-  calendr:ENABLED = TRUE.
+  calendr:ENABLED = FALSE.
   calendr:VALUE = TODAY - 1.
+  calendrPay = chCtrlFrame-3:DTPicker.
+  calendrPay:ENABLED = FALSE.
+  calendrPay:VALUE = TODAY - 1.
 
   RUN areaLoader.
   APPLY "VALUE-CHANGED":U TO brwPendingBills.
@@ -871,6 +1015,9 @@ DO:
     chCtrlFrame-2 = CtrlFrame-2:COM-HANDLE
     UIB_S = chCtrlFrame-2:LoadControls( OCXFile, "CtrlFrame-2":U)
     CtrlFrame-2:NAME = "CtrlFrame-2":U
+    chCtrlFrame-3 = CtrlFrame-3:COM-HANDLE
+    UIB_S = chCtrlFrame-3:LoadControls( OCXFile, "CtrlFrame-3":U)
+    CtrlFrame-3:NAME = "CtrlFrame-3":U
   .
   RUN initialize-controls IN THIS-PROCEDURE NO-ERROR.
 END.
@@ -954,10 +1101,12 @@ PROCEDURE enable_UI :
                Settings" section of the widget Property Sheets.
 ------------------------------------------------------------------------------*/
   RUN control_load.
-  DISPLAY radPayType filAmount tickShowPaid filSearch cmbArea filBillNo cmbCus 
+  DISPLAY filIgnore radPayType filAmount tickShowPaid filSearch cmbArea 
+          filBillNo cmbCus 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
-  ENABLE btnSelect btnSelectPayment brwPendingBills tickShowPaid filSearch 
-         cmbArea filBillNo cmbCus RECT-16 RECT-17 RECT-18 RECT-20 
+  ENABLE btnSearch filIgnore btnSelect btnSelectPayment brwPendingBills 
+         tickShowPaid filSearch btnReset RECT-16 RECT-17 RECT-18 RECT-19 
+         RECT-20 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
   {&OPEN-BROWSERS-IN-QUERY-DEFAULT-FRAME}
   VIEW C-Win.
@@ -976,7 +1125,8 @@ DO:
           (bills.tol - bills.paidAmount) <> 0 AND (
           string(bills.bill#) BEGINS filSearch OR 
           bills.cusName BEGINS filSearch           )
-          NO-LOCK  BY bills.bilDate DESC BY bills.billNo DESC.
+          AND (bills.tol - bills.paidAmount) > filIgnore 
+          NO-LOCK  BY bills.bilDate DESC BY bills.bilDate.
     END.
 END.
 ELSE IF tickShowPaid = YES THEN
@@ -984,12 +1134,14 @@ DO:
     IF AVAILABLE bills THEN
     DO:
         OPEN QUERY brwPendingBills FOR EACH bills WHERE
-          string(bills.bill#) BEGINS filSearch OR 
-          bills.cusName BEGINS filSearch
-             NO-LOCK BY bills.bilDate DESC BY bills.billNo DESC.
+          (string(bills.bill#) BEGINS filSearch OR 
+          bills.cusName BEGINS filSearch)
+            AND (bills.tol - bills.paidAmount) > filIgnore 
+             NO-LOCK BY bills.bilDate DESC BY bills.bilDate.
     END.
 END.
 APPLY "VALUE-CHANGED":U TO brwPendingBills  IN FRAME DEFAULT-FRAME.
+APPLY "LEFT-MOUSE-DBLCLICK":U TO brwPendingBills  IN FRAME DEFAULT-FRAME.
 APPLY "VALUE-CHANGED":U TO brwTransHistory  IN FRAME DEFAULT-FRAME.
 END PROCEDURE.
 

@@ -205,9 +205,9 @@ ON END-ERROR OF C-Win /* Set New Password */
 OR ENDKEY OF {&WINDOW-NAME} ANYWHERE DO:
   /* This case occurs when the user presses the "Esc" key.
      In a persistently run window, just ignore this.  If we did not, the
-     application would exit. 
+     application would exit. */ 
  
-  IF THIS-PROCEDURE:PERSISTENT THEN  */ RETURN NO-APPLY.
+  IF THIS-PROCEDURE:PERSISTENT THEN  RETURN NO-APPLY.
   QUIT.
 END.
 
@@ -268,6 +268,7 @@ DO:
         MESSAGE "Password saved successfully." VIEW-AS ALERT-BOX INFO BUTTONS OK.
         ASSIGN pwrd = ENCODE(fillPwrdNew2).
         APPLY "WINDOW-CLOSE":U TO {&WINDOW-NAME}.
+        RUN logger.r("Password changed to" + STRING(ENCODE(fillPwrdNew2))).
         RUN VALUE("menu.r").
         QUIT.
     END.
@@ -275,6 +276,7 @@ DO:
     DO:
         MESSAGE "Old Password is incorrect." VIEW-AS ALERT-BOX WARNING BUTTONS OK.
         RUN emptyF.
+        RUN logger.r("Password change attempt wrong current password").
     END.
 
 END.

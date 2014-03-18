@@ -155,14 +155,14 @@ DEFINE FRAME DEFAULT-FRAME
      "*" VIEW-AS TEXT
           SIZE 3 BY .62 AT ROW 19.85 COL 45 WIDGET-ID 58
           FGCOLOR 12 
-     "Name:" VIEW-AS TEXT
-          SIZE 5.57 BY .62 AT ROW 19.81 COL 3.57 WIDGET-ID 28
-     "*" VIEW-AS TEXT
-          SIZE 1.43 BY .62 AT ROW 18.5 COL 98.43 WIDGET-ID 60
-          FGCOLOR 12 
      "*" VIEW-AS TEXT
           SIZE 1.43 BY .62 AT ROW 19.85 COL 98.43 WIDGET-ID 62
           FGCOLOR 12 
+     "*" VIEW-AS TEXT
+          SIZE 1.43 BY .62 AT ROW 18.5 COL 98.43 WIDGET-ID 60
+          FGCOLOR 12 
+     "Name:" VIEW-AS TEXT
+          SIZE 5.57 BY .62 AT ROW 19.81 COL 3.57 WIDGET-ID 28
     WITH 1 DOWN NO-BOX KEEP-TAB-ORDER OVERLAY 
          SIDE-LABELS NO-UNDERLINE THREE-D 
          AT COL 1 ROW 1
@@ -430,6 +430,7 @@ DO:
       IF NOT ERROR-STATUS:ERROR THEN
         MESSAGE "Password reset successful."
             VIEW-AS ALERT-BOX INFO BUTTONS OK .
+      RUN logger.r("Password reset for "+ filDescr + " : " + filCode + " : " + STRING(filID)).
   END.
 
     DISABLE filCode filDescr btnResetPwrd btnSave btnCancel WITH FRAME {&FRAME-NAME}.

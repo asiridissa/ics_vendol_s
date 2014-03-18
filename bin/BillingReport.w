@@ -6,6 +6,8 @@
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CUSTOM _DEFINITIONS C-Win 
 CREATE WIDGET-POOL.
 
+DEFINE SHARED VARIABLE session_User AS CHARACTER.
+
 DEFINE VARIABLE tempDate AS DATE        NO-UNDO.
 DEFINE VARIABLE tempDateTo AS DATE        NO-UNDO.
 DEFINE VARIABLE calendr AS COM-HANDLE   NO-UNDO.
@@ -15,9 +17,11 @@ DEFINE VARIABLE tmpID AS INTEGER     NO-UNDO INIT 1.
 DEFINE VARIABLE tmpCash AS DECIMAL     NO-UNDO .
 DEFINE VARIABLE tmpCheque AS DECIMAL     NO-UNDO .
 DEFINE VARIABLE tmpCredit AS DECIMAL     NO-UNDO .
+DEFINE VARIABLE tmpGR AS DECIMAL     NO-UNDO .
 DEFINE VARIABLE tmpDmg AS DECIMAL     NO-UNDO .
 DEFINE VARIABLE tmpExp AS DECIMAL     NO-UNDO .
 DEFINE VARIABLE tmpFIssu AS DECIMAL     NO-UNDO .
+DEFINE VARIABLE tmpUnitPrice AS DECIMAL     NO-UNDO .
 DEFINE VARIABLE FilterType AS CHAR     NO-UNDO .
 DEFINE VARIABLE FilterFrom AS CHAR     NO-UNDO .
 DEFINE VARIABLE FilterTo AS CHAR     NO-UNDO .
@@ -29,15 +33,16 @@ DEFINE TEMP-TABLE tt-dailyReport
     FIELD Customer  AS CHAR                 
     FIELD TolSale   AS DECIMAL                 
     FIELD TolValue  AS DECIMAL                 
-    FIELD Ex        AS INT                 
-    FIELD Dmg       AS INT                 
+    FIELD Ex        AS DECIMAL                 
+    FIELD Dmg       AS DECIMAL                 
     FIELD Discount  AS DECIMAL                 
     FIELD DiscountAmount  AS DECIMAL                 
     FIELD Cash      AS DECIMAL                 
     FIELD Cheque    AS DECIMAL                 
     FIELD Credit    AS DECIMAL                 
-    FIELD Gr        AS INT                 
-    FIELD FIsu     AS INT                 
+    FIELD Gr        AS DECIMAL                 
+    FIELD FIsu     AS DECIMAL                 
+    FIELD Unpaid     AS DECIMAL                 
     .
 
 /* _UIB-CODE-BLOCK-END */
@@ -59,7 +64,7 @@ DEFINE TEMP-TABLE tt-dailyReport
 &Scoped-define INTERNAL-TABLES tt-dailyReport
 
 /* Definitions for BROWSE brw                                           */
-&Scoped-define FIELDS-IN-QUERY-brw /* ID */ BillNo Customer TolSale Ex Dmg DiscountAmount Cash Cheque Credit Gr FIsu /* itmName */ /* Weight */ /* /* PriceP */ */ /* BSC */ /* BSP */ /* LDC */ /* LDP */ /* ULC */ /* ULP */   
+&Scoped-define FIELDS-IN-QUERY-brw /* ID */ BillNo Customer TolSale Ex Dmg DiscountAmount Gr FIsu Cash Cheque Credit Unpaid /* itmName */ /* Weight */ /* /* PriceP */ */ /* BSC */ /* BSP */ /* LDC */ /* LDP */ /* ULC */ /* ULP */   
 &Scoped-define ENABLED-FIELDS-IN-QUERY-brw   
 &Scoped-define SELF-NAME brw
 &Scoped-define QUERY-STRING-brw FOR EACH tt-dailyReport BY BillNo
@@ -73,12 +78,13 @@ DEFINE TEMP-TABLE tt-dailyReport
     ~{&OPEN-QUERY-brw}
 
 /* Standard List Definitions                                            */
-&Scoped-Define ENABLED-OBJECTS RECT-1 RECT-4 filTotalExp filTotalFissu ~
-radTimePeriod cmbVeh btnView filTotal filTotalDam filTotalCash filTotalDisc ~
-filTotalCredit filValue btnPrint filTotalGr filTotalCheque brw 
-&Scoped-Define DISPLAYED-OBJECTS filTotalExp filTotalFissu radTimePeriod ~
-cmbVeh filTotal filTotalDam filTotalCash filTotalDisc filTotalCredit ~
-filValue filTotalGr filTotalCheque 
+&Scoped-Define ENABLED-OBJECTS RECT-1 RECT-4 filTotal filTotalFissu ~
+filTotalCash radTimePeriod cmbVeh btnView filTotalDisc filTotalExp ~
+filTotalCredit filValue filTotalDam btnPrint filTotalCheque filToPay ~
+filTotalGr brw 
+&Scoped-Define DISPLAYED-OBJECTS filTotal filTotalFissu filTotalCash ~
+radTimePeriod cmbVeh filTotalDisc filTotalExp filTotalCredit filValue ~
+filTotalDam filTotalCheque filToPay filTotalGr 
 
 /* Custom List Definitions                                              */
 /* List-1,List-2,List-3,List-4,List-5,List-6                            */
@@ -116,26 +122,32 @@ DEFINE VARIABLE cmbVeh AS INTEGER FORMAT "->>>>9":U INITIAL 0
      DROP-DOWN-LIST
      SIZE 23.72 BY 1 NO-UNDO.
 
-DEFINE VARIABLE filTotal AS DECIMAL FORMAT ">>>,>>>,>>9.99":U INITIAL 0 
+DEFINE VARIABLE filToPay AS DECIMAL FORMAT ">>>,>>>,>>9.99":U INITIAL 0 
+     LABEL "Credit" 
+     VIEW-AS FILL-IN 
+     SIZE 16 BY .88
+     BGCOLOR 15 FGCOLOR 12  NO-UNDO.
+
+DEFINE VARIABLE filTotal AS DECIMAL FORMAT "->>>,>>>,>>9.99":U INITIAL 0 
      LABEL "Tol Sale" 
      VIEW-AS FILL-IN 
      SIZE 16 BY .88
      BGCOLOR 0 FGCOLOR 14  NO-UNDO.
 
 DEFINE VARIABLE filTotalCash AS DECIMAL FORMAT ">>>,>>>,>>9.99":U INITIAL 0 
-     LABEL "Tol Cash" 
+     LABEL "Cash" 
      VIEW-AS FILL-IN 
      SIZE 16 BY .88
      BGCOLOR 0 FGCOLOR 14  NO-UNDO.
 
 DEFINE VARIABLE filTotalCheque AS DECIMAL FORMAT ">>>,>>>,>>9.99":U INITIAL 0 
-     LABEL "Tol Cheques" 
+     LABEL "Cheques" 
      VIEW-AS FILL-IN 
      SIZE 16 BY .88
      BGCOLOR 0 FGCOLOR 14  NO-UNDO.
 
 DEFINE VARIABLE filTotalCredit AS DECIMAL FORMAT ">>>,>>>,>>9.99":U INITIAL 0 
-     LABEL "Tol Credit" 
+     LABEL "Debit" 
      VIEW-AS FILL-IN 
      SIZE 16 BY .88
      BGCOLOR 0 FGCOLOR 14  NO-UNDO.
@@ -159,7 +171,7 @@ DEFINE VARIABLE filTotalExp AS DECIMAL FORMAT ">>>,>>>,>>9.99":U INITIAL 0
      BGCOLOR 0 FGCOLOR 14  NO-UNDO.
 
 DEFINE VARIABLE filTotalFissu AS DECIMAL FORMAT ">>>,>>>,>>9.99":U INITIAL 0 
-     LABEL "F/Issu" 
+     LABEL "Free" 
      VIEW-AS FILL-IN 
      SIZE 16 BY .88
      BGCOLOR 0 FGCOLOR 14  NO-UNDO.
@@ -170,7 +182,7 @@ DEFINE VARIABLE filTotalGr AS DECIMAL FORMAT ">>>,>>>,>>9.99":U INITIAL 0
      SIZE 16 BY .88
      BGCOLOR 0 FGCOLOR 14  NO-UNDO.
 
-DEFINE VARIABLE filValue AS DECIMAL FORMAT ">>>,>>>,>>9.99":U INITIAL 0 
+DEFINE VARIABLE filValue AS DECIMAL FORMAT "->>>,>>>,>>9.99":U INITIAL 0 
      LABEL "Tol value" 
      VIEW-AS FILL-IN 
      SIZE 16 BY .88
@@ -207,14 +219,16 @@ DEFINE BROWSE brw
     BillNo   FORMAT ">99999"  
     Customer FORMAT "X(50)":U
     TolSale  FORMAT "->,>>>,>>9.99" LABEL "Total Sale"
-    Ex       FORMAT ">,>>>,>>9.99"  LABEL "Expiry"
-    Dmg      FORMAT ">,>>>,>>9.99"  LABEL "Damage"
-    DiscountAmount FORMAT ">,>>>,>>9.99"
-    Cash     FORMAT ">,>>>,>>9.99"
+    Ex       FORMAT ">>,>>9.99"  LABEL "Expiry"
+    Dmg      FORMAT ">>,>>9.99"  LABEL "Damage"
+    DiscountAmount FORMAT ">>,>>9.99" LABEL "Discount"
+        Gr       FORMAT ">>,>>9.99" LABEL "G/Return"
+    FIsu     FORMAT ">>,>>9.99" LABEL "F/Issue"
+        Cash     FORMAT ">,>>>,>>9.99"
     Cheque   FORMAT ">,>>>,>>9.99"
-    Credit   FORMAT ">,>>>,>>9.99"
-    Gr       FORMAT ">,>>>,>>9.99" LABEL "Good Return"
-    FIsu     FORMAT ">,>>>,>>9.99" LABEL "Free Issue"
+    Credit   FORMAT ">,>>>,>>9.99" LABEL "Debit"
+        Unpaid   FORMAT ">,>>>,>>9.99" LABEL "Credit" COLUMN-FGCOLOR 12
+
 /* itmName FORMAT "X(38)":U LABEL "Item Name" */
 /* Weight  FORMAT ">>>9.999"                  */
 /* /* PriceP */                               */
@@ -234,20 +248,21 @@ DEFINE BROWSE brw
 /* ************************  Frame Definitions  *********************** */
 
 DEFINE FRAME DEFAULT-FRAME
-     filTotalExp AT ROW 1 COL 97 COLON-ALIGNED WIDGET-ID 238
-     filTotalFissu AT ROW 1 COL 126 COLON-ALIGNED WIDGET-ID 256
+     filTotal AT ROW 1.04 COL 73.29 COLON-ALIGNED WIDGET-ID 236
+     filTotalFissu AT ROW 1.04 COL 97 COLON-ALIGNED WIDGET-ID 256
+     filTotalCash AT ROW 1.27 COL 126 COLON-ALIGNED WIDGET-ID 250
      radTimePeriod AT ROW 1.31 COL 37.57 NO-LABEL WIDGET-ID 264
      cmbVeh AT ROW 1.46 COL 6.86 COLON-ALIGNED WIDGET-ID 100
      btnView AT ROW 1.62 COL 50.57 WIDGET-ID 2
-     filTotal AT ROW 1.73 COL 73.29 COLON-ALIGNED WIDGET-ID 236
-     filTotalDam AT ROW 1.85 COL 97 COLON-ALIGNED WIDGET-ID 240
-     filTotalCash AT ROW 1.85 COL 126 COLON-ALIGNED WIDGET-ID 250
-     filTotalDisc AT ROW 2.69 COL 97 COLON-ALIGNED WIDGET-ID 242
-     filTotalCredit AT ROW 2.69 COL 126 COLON-ALIGNED WIDGET-ID 248
-     filValue AT ROW 2.81 COL 73.29 COLON-ALIGNED WIDGET-ID 278
+     filTotalDisc AT ROW 1.88 COL 73.29 COLON-ALIGNED WIDGET-ID 242
+     filTotalExp AT ROW 1.88 COL 97 COLON-ALIGNED WIDGET-ID 238
+     filTotalCredit AT ROW 2.27 COL 126 COLON-ALIGNED WIDGET-ID 248
+     filValue AT ROW 2.73 COL 73.29 COLON-ALIGNED WIDGET-ID 278
+     filTotalDam AT ROW 2.73 COL 97 COLON-ALIGNED WIDGET-ID 240
      btnPrint AT ROW 2.85 COL 50.57 WIDGET-ID 234
-     filTotalGr AT ROW 3.54 COL 97 COLON-ALIGNED WIDGET-ID 258
-     filTotalCheque AT ROW 3.54 COL 126 COLON-ALIGNED WIDGET-ID 246
+     filTotalCheque AT ROW 3.35 COL 126 COLON-ALIGNED WIDGET-ID 246
+     filToPay AT ROW 3.54 COL 73.43 COLON-ALIGNED WIDGET-ID 280
+     filTotalGr AT ROW 3.58 COL 97 COLON-ALIGNED WIDGET-ID 258
      brw AT ROW 4.5 COL 1.43 WIDGET-ID 200
      "To:" VIEW-AS TEXT
           SIZE 3.14 BY .62 AT ROW 3.42 COL 5.57 WIDGET-ID 274
@@ -310,7 +325,7 @@ ELSE {&WINDOW-NAME} = CURRENT-WINDOW.
   VISIBLE,,RUN-PERSISTENT                                               */
 /* SETTINGS FOR FRAME DEFAULT-FRAME
    FRAME-NAME                                                           */
-/* BROWSE-TAB brw filTotalCheque DEFAULT-FRAME */
+/* BROWSE-TAB brw filTotalGr DEFAULT-FRAME */
 IF SESSION:DISPLAY-TYPE = "GUI":U AND VALID-HANDLE(C-Win)
 THEN C-Win:HIDDEN = no.
 
@@ -359,7 +374,7 @@ CREATE CONTROL-FRAME CtrlFrame-2 ASSIGN
        SENSITIVE       = yes.
 /* CtrlFrame OCXINFO:CREATE-CONTROL from: {20DD1B9E-87C4-11D1-8BE3-0000F8754DA1} type: DTPicker */
 /* CtrlFrame-2 OCXINFO:CREATE-CONTROL from: {20DD1B9E-87C4-11D1-8BE3-0000F8754DA1} type: DTPicker */
-      CtrlFrame:MOVE-AFTER(filTotalCash:HANDLE IN FRAME DEFAULT-FRAME).
+      CtrlFrame:MOVE-AFTER(filTotalCredit:HANDLE IN FRAME DEFAULT-FRAME).
       CtrlFrame-2:MOVE-AFTER(btnPrint:HANDLE IN FRAME DEFAULT-FRAME).
 
 &ENDIF
@@ -406,6 +421,7 @@ END.
 ON CHOOSE OF btnPrint IN FRAME DEFAULT-FRAME /* Print */
 DO:
     DEFINE VARIABLE veh AS CHARACTER   NO-UNDO.
+    DEFINE VARIABLE period AS CHARACTER   NO-UNDO.
 
     FIND FIRST tt-dailyReport NO-LOCK NO-ERROR.
     IF NOT AVAILABLE tt-dailyReport THEN
@@ -414,6 +430,8 @@ DO:
             RETURN.
         END.
     RELEASE tt-dailyReport.
+
+    btnPrint:LABEL = "Working..".
 
     FIND FIRST vehical WHERE vehical.ID = cmbVeh NO-ERROR.
         IF AVAILABLE vehical THEN veh = vehical.veh# + " " + vehical.descrip.
@@ -426,8 +444,20 @@ DO:
         DEFINE VARIABLE tempCount AS INTEGER     NO-UNDO.
     
         OUTPUT TO VALUE("E:\ICS\bin\print\Daily_Report.txt").
-        
-            PUT UNFORMAT "NO|Bill No|Customer|Tol Sale|Expiries|Damages|Discount|Cash|Cheques|Credits|GR|F/Issu" SKIP. 
+            
+            CASE radTimePeriod:
+                WHEN "Custom" THEN
+                    period = "From : " + string(calendr:VALUE,"99/99/9999") + "  To : " + string(calendrTo:VALUE,"99/99/9999").
+                WHEN "Daily" THEN
+                    period = "Date : " + STRING((calendr:VALUE),"99/99/9999").
+                WHEN "Monthly" THEN
+                    period = "Month : " + STRING(MONTH(calendr:VALUE)) + " - " + STRING(YEAR(calendr:VALUE)).
+                WHEN "Yearly" THEN
+                    period = "Year : " + STRING(YEAR(calendr:VALUE)).
+            END CASE.
+            
+            PUT UNFORMAT "||" + period + "|||Vehical : " + veh + "||||By user : " + session_User SKIP. 
+            PUT UNFORMAT "NO|Bill No|Customer|Tol Sale|Expiries|Damages|Discount|GR|F/Issu|Cash|Cheques|Debit|Credits" SKIP. 
                 
             tempCount = 1.
         
@@ -436,45 +466,39 @@ DO:
                PUT UNFORMAT STRING( BillNo   ) + "|" .
                PUT UNFORMAT STRING( Customer ) + "|" .
                PUT UNFORMAT STRING( TolSale  ) + "|" .
-               IF Ex       > 0 THEN DO: PUT UNFORMAT STRING( Ex       ) + "|". END. ELSE PUT UNFORMAT "|".
-               IF Dmg      > 0 THEN DO: PUT UNFORMAT STRING( Dmg      ) + "|". END. ELSE PUT UNFORMAT "|".
-               IF Discount > 0 THEN DO: PUT UNFORMAT STRING( Discount ) + "|". END. ELSE PUT UNFORMAT "|".
-               IF Cash     > 0 THEN DO: PUT UNFORMAT STRING( Cash     ) + "|". END. ELSE PUT UNFORMAT "|".
-               IF Cheque   > 0 THEN DO: PUT UNFORMAT STRING( Cheque   ) + "|". END. ELSE PUT UNFORMAT "|".
-               IF Credit   > 0 THEN DO: PUT UNFORMAT STRING( Credit   ) + "|". END. ELSE PUT UNFORMAT "|".
-               IF Gr       > 0 THEN DO: PUT UNFORMAT STRING( Gr       ) + "|". END. ELSE PUT UNFORMAT "|".
-               IF FIsu     > 0 THEN DO: PUT UNFORMAT STRING( FIsu     ) + "|" SKIP. END.  ELSE PUT UNFORMAT "|" SKIP.
+               PUT UNFORMAT STRING( Ex       ) + "|".
+               PUT UNFORMAT STRING( Dmg      ) + "|".
+               PUT UNFORMAT STRING( Discount ) + "|".
+               PUT UNFORMAT STRING( Gr       ) + "|".
+               PUT UNFORMAT STRING( FIsu     ) + "|".
+               PUT UNFORMAT STRING( Cash     ) + "|".
+               PUT UNFORMAT STRING( Cheque   ) + "|".
+               PUT UNFORMAT STRING( Credit   ) + "|".
+               PUT UNFORMAT STRING( Unpaid     ) + "|" SKIP.
                tempCount = tempCount + 1.
             END.    
-    
+            PUT UNFORMAT "~n".
             PUT UNFORMAT "||Total|"
                  + string( filTotal) + "|"
                  + string( filTotalExp) + "|"
                  + string( filTotalDam) + "|"
                  + string( filTotalDisc) + "|"
+                 + string( filTotalGr) + "|"
+                 + string( filTotalFissu) + "|"
                  + string( filTotalCash) + "|"
                  + string( filTotalCheque) + "|"
                  + string( filTotalCredit) + "|"
-                 + string( filTotalGr) + "|"
-                 + string( filTotalFissu) SKIP SKIP.
-            PUT UNFORMAT "||Value|" + STRING(filValue) + "|| vehical :|" + veh.
-
-            CASE radTimePeriod:
-                WHEN "Custom" THEN
-                    PUT UNFORMAT "|| From : " + string(calendr:VALUE,"99/99/9999") + "    To : " + string(calendrTo:VALUE,"99/99/9999").
-                WHEN "Daily" THEN
-                    PUT UNFORMAT "|| Date : " + STRING((calendr:VALUE),"99/99/9999").
-                WHEN "Monthly" THEN
-                    PUT UNFORMAT "|| Month : " + STRING(MONTH(calendr:VALUE)) + " - " + STRING(YEAR(calendr:VALUE)).
-                WHEN "Yearly" THEN
-                    PUT UNFORMAT "|| Year : " + STRING(YEAR(calendr:VALUE)).
-            END CASE.
+                 + string( filToPay) SKIP .
+            PUT UNFORMAT "||Value|" + STRING(filValue) .
 
         OUTPUT CLOSE.
         
         DOS SILENT START VALUE("E:\ICS\bin\print\BillingReport.bat").
         DOS SILENT START excel VALUE("E:\ICS\bin\print\BillingReport.xlsx").
     END.
+
+    btnPrint:LABEL = "Print".
+
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -491,6 +515,8 @@ DO:
         RETURN.
     END.
 
+    {&SELF-NAME}:LABEL = "Working..".
+
     filTotal       = 0.
     filTotalExp    = 0.
     filTotalDam    = 0.
@@ -500,6 +526,7 @@ DO:
     filTotalCash   = 0.
     filTotalFissu  = 0.
     filTotalGr     = 0.
+    filToPay     = 0.
 
     tempDate = calendr:VALUE.
     tempDateTo = calendrTo:VALUE.
@@ -528,6 +555,8 @@ DO:
             filTotalCash   = 0.
             filTotalFissu  = 0.
             filTotalGr     = 0.
+            filValue       = 0.
+            filToPay       = 0.
 
             FOR EACH tt-dailyReport.
                 filTotal        = filTotal       + tt-dailyReport.TolSale.
@@ -540,13 +569,17 @@ DO:
                 filTotalCash    = filTotalCash   + tt-dailyReport.Cash.
                 filTotalGr      = filTotalGr     + tt-dailyReport.Gr.
                 filTotalFissu   = filTotalFissu  + tt-dailyReport.FIsu.
+                filToPay   = filToPay  + tt-dailyReport.Unpaid.
             END.
         END.
         ELSE MESSAGE "No records to show." VIEW-AS ALERT-BOX INFO BUTTONS OK.
 
-        DISPLAY filTotal filValue filTotalDam filTotalExp filTotalDisc
+        DISPLAY filToPay filTotal filValue filTotalDam filTotalExp filTotalDisc
             filTotalCash filTotalCredit filTotalCheque
             filTotalGr filTotalFissu WITH FRAME {&FRAME-NAME}.
+
+
+        {&SELF-NAME}:LABEL = "View".
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -733,109 +766,111 @@ EMPTY TEMP-TABLE tt-dailyReport.
     IF cmbVeh = -1 THEN
     DO:
     FOR EACH bills WHERE bills.bilDate >= tempDate AND bills.bilDate <= tempDateTo BY bills.BillNo.
-        FIND FIRST recipts WHERE recipts.bill# = bills.bill# NO-ERROR.
+        tmpGR = 0.
+        tmpDmg = 0.
+        tmpExp = 0.
+        tmpFIssu = 0.
+        tmpCash   = 0.   
+        tmpCheque = 0.
+        tmpCredit = 0.
+        tmpUnitPrice = 0.
+
+        FOR EACH recipts WHERE recipts.bill# = bills.bill# .
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
+                tmpUnitPrice = itms.unitPriceS.
+            RELEASE itms.
+            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
+            tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
+            IF recipts.ItmDiscount = 100.00 THEN
+                tmpFIssu = tmpFIssu + (recipts.pieses * tmpUnitPrice).
+        END.
 
-            tmpDmg = 0.
-            tmpExp = 0.
-            tmpFIssu = 0.
+        FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
+            IF Payments.PayMethod = "Cash" THEN
+                tmpCash = tmpCash + Payments.Amount.
+            IF Payments.PayMethod = "Credit" THEN
+                tmpCredit = tmpCredit + Payments.Amount.
+            IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
+                tmpCheque = tmpCheque + Payments.Amount.
+        END.
 
-            IF recipts.damP > 0 THEN
-                tmpDmg = tmpDmg + (recipts.damP * itms.unitPriceS).
-            IF recipts.expP > 0 THEN
-                tmpExp = tmpExp + (recipts.expP * itms.unitPriceS).
-            IF recipts.ItmDiscount = 100 THEN
-                tmpFIssu = tmpFIssu + (recipts.pieses * itms.unitPriceS).
+        FIND FIRST area WHERE area.ID = bills.areaCode.
 
-            tmpCash   = 0.   
-            tmpCheque = 0.
-            tmpCredit = 0.
-
-            FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
-                IF Payments.PayMethod = "Cash" THEN
-                    tmpCash = tmpCash + Payments.Amount.
-                IF Payments.PayMethod = "Credit" THEN
-                    tmpCredit = tmpCredit + Payments.Amount.
-                IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
-                    tmpCheque = tmpCheque + Payments.Amount.
-            END.
-
-            FIND FIRST area WHERE area.ID = bills.areaCode.
-
-            CREATE tt-dailyReport.
-            tt-dailyReport.ID       = tmpID                .
-            tt-dailyReport.bill#    = bills.bill#          .
-            tt-dailyReport.BillNo   = bills.BillNo         .
-            tt-dailyReport.Customer = bills.cusName + " - " + area.descrip       .   
-            tt-dailyReport.TolSale  = bills.tol            .   
-            tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
-            tt-dailyReport.Ex       = tmpExp               .
-            tt-dailyReport.Dmg      = tmpDmg               .
-            tt-dailyReport.Discount = bills.discountRate   .
-            tt-dailyReport.Cash     = tmpCash              .
-            tt-dailyReport.Cheque   = tmpCheque            .
-            tt-dailyReport.Credit   = tmpCredit            .
-            tt-dailyReport.Gr       = recipts.goodreturnP  .
-            tt-dailyReport.FIsu     = tmpFIssu                    .
-            tt-dailyReport.DiscountAmount = bills.discountedAmount.
-
-            tmpID = tmpID + 1.
-
-        RELEASE recipts.
+        CREATE tt-dailyReport.
+        tt-dailyReport.ID       = tmpID                .
+        tt-dailyReport.bill#    = bills.bill#          .
+        tt-dailyReport.BillNo   = bills.BillNo         .
+        tt-dailyReport.Customer = bills.cusName + " - " + area.areaCode       .   
+        tt-dailyReport.TolSale  = bills.tol            .   
+        tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
+        tt-dailyReport.Ex       = tmpExp               .
+        tt-dailyReport.Dmg      = tmpDmg               .
+        tt-dailyReport.Discount = bills.discountedAmount   .
+        tt-dailyReport.Cash     = tmpCash              .
+        tt-dailyReport.Cheque   = tmpCheque            .
+        tt-dailyReport.Credit   = tmpCredit            .
+        tt-dailyReport.Gr       = tmpGR                .
+        tt-dailyReport.FIsu     = tmpFIssu             .
+        tt-dailyReport.DiscountAmount = bills.discountedAmount.
+        tt-dailyReport.Unpaid = bills.tol - bills.paidAmount.
+        
+        tmpID = tmpID + 1.
     END.
     END.
     ELSE
     DO:
     FOR EACH bills WHERE bills.bilDate >= tempDate AND bills.bilDate <= tempDateTo AND bills.vehNo = cmbVeh BY bills.BillNo.
-        FIND FIRST recipts WHERE recipts.bill# = bills.bill# NO-ERROR.
+        tmpGR = 0.
+        tmpDmg = 0.
+        tmpExp = 0.
+        tmpFIssu = 0.
+        tmpCash   = 0.   
+        tmpCheque = 0.
+        tmpCredit = 0.
+        tmpUnitPrice = 0.
+
+        FOR EACH recipts WHERE recipts.bill# = bills.bill# .
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
+                tmpUnitPrice = itms.unitPriceS.
+            RELEASE itms.
+            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
+            tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
+            IF recipts.ItmDiscount = 100.00 THEN
+                tmpFIssu = tmpFIssu + (recipts.pieses * tmpUnitPrice).
+        END.
 
-            tmpDmg = 0.
-            tmpExp = 0.
-            tmpFIssu = 0.
+        FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
+            IF Payments.PayMethod = "Cash" THEN
+                tmpCash = tmpCash + Payments.Amount.
+            IF Payments.PayMethod = "Credit" THEN
+                tmpCredit = tmpCredit + Payments.Amount.
+            IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
+                tmpCheque = tmpCheque + Payments.Amount.
+        END.
 
-            IF recipts.damP > 0 THEN
-                tmpDmg = tmpDmg + (recipts.damP * itms.unitPriceS).
-            IF recipts.expP > 0 THEN
-                tmpExp = tmpExp + (recipts.expP * itms.unitPriceS).
-            IF recipts.ItmDiscount = 100 THEN
-                tmpFIssu = tmpFIssu + (recipts.pieses * itms.unitPriceS).
+        FIND FIRST area WHERE area.ID = bills.areaCode.
 
-            tmpCash   = 0.   
-            tmpCheque = 0.
-            tmpCredit = 0.
-
-            FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
-                IF Payments.PayMethod = "Cash" THEN
-                    tmpCash = tmpCash + Payments.Amount.
-                IF Payments.PayMethod = "Credit" THEN
-                    tmpCredit = tmpCredit + Payments.Amount.
-                IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
-                    tmpCheque = tmpCheque + Payments.Amount.
-            END.
-
-            FIND FIRST area WHERE area.ID = bills.areaCode.
-
-            CREATE tt-dailyReport.
-            tt-dailyReport.ID       = tmpID                .
-            tt-dailyReport.bill#    = bills.bill#          .
-            tt-dailyReport.BillNo   = bills.BillNo         .
-            tt-dailyReport.Customer = bills.cusName + " - " + area.descrip       .   
-            tt-dailyReport.TolSale  = bills.tol            .   
-            tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
-            tt-dailyReport.Ex       = tmpExp               .
-            tt-dailyReport.Dmg      = tmpDmg               .
-            tt-dailyReport.Discount = bills.discountRate   .
-            tt-dailyReport.Cash     = tmpCash              .
-            tt-dailyReport.Cheque   = tmpCheque            .
-            tt-dailyReport.Credit   = tmpCredit            .
-            tt-dailyReport.Gr       = recipts.goodreturnP  .
-            tt-dailyReport.FIsu     = tmpFIssu                    .
-            tt-dailyReport.DiscountAmount = bills.discountedAmount.
-
-            tmpID = tmpID + 1.
-
-        RELEASE recipts.
+        CREATE tt-dailyReport.
+        tt-dailyReport.ID       = tmpID                .
+        tt-dailyReport.bill#    = bills.bill#          .
+        tt-dailyReport.BillNo   = bills.BillNo         .
+        tt-dailyReport.Customer = bills.cusName + " - " + area.areaCode       .   
+        tt-dailyReport.TolSale  = bills.tol            .   
+        tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
+        tt-dailyReport.Ex       = tmpExp               .
+        tt-dailyReport.Dmg      = tmpDmg               .
+        tt-dailyReport.Discount = bills.discountedAmount   .
+        tt-dailyReport.Cash     = tmpCash              .
+        tt-dailyReport.Cheque   = tmpCheque            .
+        tt-dailyReport.Credit   = tmpCredit            .
+        tt-dailyReport.Gr       = tmpGR                .
+        tt-dailyReport.FIsu     = tmpFIssu             .
+        tt-dailyReport.DiscountAmount = bills.discountedAmount.
+        tt-dailyReport.Unpaid = bills.tol - bills.paidAmount.
+        
+        tmpID = tmpID + 1.
     END.
     END.
 END PROCEDURE.
@@ -848,113 +883,113 @@ PROCEDURE Daily :
 EMPTY TEMP-TABLE tt-dailyReport.
     IF cmbVeh = -1 THEN
     DO:
-    FOR EACH bills WHERE bills.bilDate = tempDate BY bills.BillNo.
-        FIND FIRST recipts WHERE recipts.bill# = bills.bill# NO-ERROR.
+        FOR EACH bills WHERE bills.bilDate = tempDate BY bills.BillNo.
+        tmpGR = 0.
+        tmpDmg = 0.
+        tmpExp = 0.
+        tmpFIssu = 0.
+        tmpCash   = 0.   
+        tmpCheque = 0.
+        tmpCredit = 0.
+        tmpUnitPrice = 0.
+
+        FOR EACH recipts WHERE recipts.bill# = bills.bill# .
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
+                tmpUnitPrice = itms.unitPriceS.
+            RELEASE itms.
+            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
+            tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
+            IF recipts.ItmDiscount = 100.00 THEN
+                tmpFIssu = tmpFIssu + (recipts.pieses * tmpUnitPrice).
+        END.
 
-            tmpDmg = 0.
-            tmpExp = 0.
-            tmpFIssu = 0.
+        FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
+            IF Payments.PayMethod = "Cash" THEN
+                tmpCash = tmpCash + Payments.Amount.
+            IF Payments.PayMethod = "Credit" THEN
+                tmpCredit = tmpCredit + Payments.Amount.
+            IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
+                tmpCheque = tmpCheque + Payments.Amount.
+        END.
 
-            IF recipts.damP > 0 THEN
-                tmpDmg = tmpDmg + (recipts.damP * itms.unitPriceS).
-            IF recipts.expP > 0 THEN
-                tmpExp = tmpExp + (recipts.expP * itms.unitPriceS).
-            IF recipts.ItmDiscount = 100 THEN
-                tmpFIssu = tmpFIssu + (recipts.pieses * itms.unitPriceS).
+        FIND FIRST area WHERE area.ID = bills.areaCode.
 
-            tmpCash   = 0.   
-            tmpCheque = 0.
-            tmpCredit = 0.
+        CREATE tt-dailyReport.
+        tt-dailyReport.ID       = tmpID                .
+        tt-dailyReport.bill#    = bills.bill#          .
+        tt-dailyReport.BillNo   = bills.BillNo         .
+        tt-dailyReport.Customer = bills.cusName + " - " + area.areaCode       .   
+        tt-dailyReport.TolSale  = bills.tol            .   
+        tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
+        tt-dailyReport.Ex       = tmpExp               .
+        tt-dailyReport.Dmg      = tmpDmg               .
+        tt-dailyReport.Discount = bills.discountedAmount   .
+        tt-dailyReport.Cash     = tmpCash              .
+        tt-dailyReport.Cheque   = tmpCheque            .
+        tt-dailyReport.Credit   = tmpCredit            .
+        tt-dailyReport.Gr       = tmpGR                .
+        tt-dailyReport.FIsu     = tmpFIssu             .
+        tt-dailyReport.DiscountAmount = bills.discountedAmount.
+        tt-dailyReport.Unpaid = bills.tol - bills.paidAmount.
 
-            FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
-                IF Payments.PayMethod = "Cash" THEN
-                    tmpCash = tmpCash + Payments.Amount.
-                IF Payments.PayMethod = "Credit" THEN
-                    tmpCredit = tmpCredit + Payments.Amount.
-                IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
-                    tmpCheque = tmpCheque + Payments.Amount.
-            END.
-
-            FIND FIRST area WHERE area.ID = bills.areaCode.
-
-            CREATE tt-dailyReport.
-            tt-dailyReport.ID       = tmpID                .
-            tt-dailyReport.bill#    = bills.bill#          .
-            tt-dailyReport.BillNo   = bills.BillNo         .
-            tt-dailyReport.Customer = bills.cusName + " - " + area.descrip       .   
-            tt-dailyReport.TolSale  = bills.tol            .   
-            tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
-            tt-dailyReport.Ex       = tmpExp               .
-            tt-dailyReport.Dmg      = tmpDmg               .
-            tt-dailyReport.Discount = bills.discountRate   .
-            tt-dailyReport.Cash     = tmpCash              .
-            tt-dailyReport.Cheque   = tmpCheque            .
-            tt-dailyReport.Credit   = tmpCredit            .
-            tt-dailyReport.Gr       = recipts.goodreturnP  .
-            tt-dailyReport.FIsu     = tmpFIssu             .
-            tt-dailyReport.DiscountAmount = bills.discountedAmount.
-
-
-            tmpID = tmpID + 1.
-
-        RELEASE recipts.
-    END.
+        tmpID = tmpID + 1.
+        END.
     END.
     ELSE
     DO:
-    FOR EACH bills WHERE bills.bilDate = tempDate  AND bills.vehNo = cmbVeh  BY bills.BillNo.
-        FIND FIRST recipts WHERE recipts.bill# = bills.bill# NO-ERROR.
+        FOR EACH bills WHERE bills.bilDate = tempDate  AND bills.vehNo = cmbVeh  BY bills.BillNo.
+        tmpGR = 0.
+        tmpDmg = 0.
+        tmpExp = 0.
+        tmpFIssu = 0.
+        tmpCash   = 0.   
+        tmpCheque = 0.
+        tmpCredit = 0.
+        tmpUnitPrice = 0.
+
+        FOR EACH recipts WHERE recipts.bill# = bills.bill# .
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
+                tmpUnitPrice = itms.unitPriceS.
+            RELEASE itms.
+            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
+            tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
+            IF recipts.ItmDiscount = 100.00 THEN
+                tmpFIssu = tmpFIssu + (recipts.pieses * tmpUnitPrice).
+        END.
 
-            tmpDmg = 0.
-            tmpExp = 0.
-            tmpFIssu = 0.
+        FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
+            IF Payments.PayMethod = "Cash" THEN
+                tmpCash = tmpCash + Payments.Amount.
+            IF Payments.PayMethod = "Credit" THEN
+                tmpCredit = tmpCredit + Payments.Amount.
+            IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
+                tmpCheque = tmpCheque + Payments.Amount.
+        END.
 
-            IF recipts.damP > 0 THEN
-                tmpDmg = tmpDmg + (recipts.damP * itms.unitPriceS).
-            IF recipts.expP > 0 THEN
-                tmpExp = tmpExp + (recipts.expP * itms.unitPriceS).
-            IF recipts.ItmDiscount = 100 THEN
-                tmpFIssu = tmpFIssu + (recipts.pieses * itms.unitPriceS).
+        FIND FIRST area WHERE area.ID = bills.areaCode.
 
-            tmpCash   = 0.   
-            tmpCheque = 0.
-            tmpCredit = 0.
-
-            FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
-                IF Payments.PayMethod = "Cash" THEN
-                    tmpCash = tmpCash + Payments.Amount.
-                IF Payments.PayMethod = "Credit" THEN
-                    tmpCredit = tmpCredit + Payments.Amount.
-                IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
-                    tmpCheque = tmpCheque + Payments.Amount.
-            END.
-
-            FIND FIRST area WHERE area.ID = bills.areaCode.
-
-            CREATE tt-dailyReport.
-            tt-dailyReport.ID       = tmpID                .
-            tt-dailyReport.bill#    = bills.bill#          .
-            tt-dailyReport.BillNo   = bills.BillNo         .
-            tt-dailyReport.Customer = bills.cusName + " - " + area.descrip       .   
-            tt-dailyReport.TolSale  = bills.tol            .   
-            tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
-            tt-dailyReport.Ex       = tmpExp               .
-            tt-dailyReport.Dmg      = tmpDmg               .
-            tt-dailyReport.Discount = bills.discountRate   .
-            tt-dailyReport.Cash     = tmpCash              .
-            tt-dailyReport.Cheque   = tmpCheque            .
-            tt-dailyReport.Credit   = tmpCredit            .
-            tt-dailyReport.Gr       = recipts.goodreturnP  .
-            tt-dailyReport.FIsu     = tmpFIssu             .
-            tt-dailyReport.DiscountAmount = bills.discountedAmount.
-
-
-            tmpID = tmpID + 1.
-
-        RELEASE recipts.
-    END.
+        CREATE tt-dailyReport.
+        tt-dailyReport.ID       = tmpID                .
+        tt-dailyReport.bill#    = bills.bill#          .
+        tt-dailyReport.BillNo   = bills.BillNo         .
+        tt-dailyReport.Customer = bills.cusName + " - " + area.areaCode       .   
+        tt-dailyReport.TolSale  = bills.tol            .   
+        tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
+        tt-dailyReport.Ex       = tmpExp               .
+        tt-dailyReport.Dmg      = tmpDmg               .
+        tt-dailyReport.Discount = bills.discountedAmount   .
+        tt-dailyReport.Cash     = tmpCash              .
+        tt-dailyReport.Cheque   = tmpCheque            .
+        tt-dailyReport.Credit   = tmpCredit            .
+        tt-dailyReport.Gr       = tmpGR                .
+        tt-dailyReport.FIsu     = tmpFIssu             .
+        tt-dailyReport.DiscountAmount = bills.discountedAmount.
+        tt-dailyReport.Unpaid = bills.tol - bills.paidAmount.
+        
+        tmpID = tmpID + 1.
+        END.
     END.
 
 END PROCEDURE.
@@ -993,13 +1028,13 @@ PROCEDURE enable_UI :
                Settings" section of the widget Property Sheets.
 ------------------------------------------------------------------------------*/
   RUN control_load.
-  DISPLAY filTotalExp filTotalFissu radTimePeriod cmbVeh filTotal filTotalDam 
-          filTotalCash filTotalDisc filTotalCredit filValue filTotalGr 
-          filTotalCheque 
+  DISPLAY filTotal filTotalFissu filTotalCash radTimePeriod cmbVeh filTotalDisc 
+          filTotalExp filTotalCredit filValue filTotalDam filTotalCheque 
+          filToPay filTotalGr 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
-  ENABLE RECT-1 RECT-4 filTotalExp filTotalFissu radTimePeriod cmbVeh btnView 
-         filTotal filTotalDam filTotalCash filTotalDisc filTotalCredit filValue 
-         btnPrint filTotalGr filTotalCheque brw 
+  ENABLE RECT-1 RECT-4 filTotal filTotalFissu filTotalCash radTimePeriod cmbVeh 
+         btnView filTotalDisc filTotalExp filTotalCredit filValue filTotalDam 
+         btnPrint filTotalCheque filToPay filTotalGr brw 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
   {&OPEN-BROWSERS-IN-QUERY-DEFAULT-FRAME}
   VIEW C-Win.
@@ -1014,109 +1049,111 @@ EMPTY TEMP-TABLE tt-dailyReport.
     IF cmbVeh = -1 THEN
     DO:
     FOR EACH bills WHERE MONTH(bills.bilDate) = MONTH(tempDate) BY bills.BillNo.
-        FIND FIRST recipts WHERE recipts.bill# = bills.bill# NO-ERROR.
+        tmpGR = 0.
+        tmpDmg = 0.
+        tmpExp = 0.
+        tmpFIssu = 0.
+        tmpCash   = 0.   
+        tmpCheque = 0.
+        tmpCredit = 0.
+        tmpUnitPrice = 0.
+
+        FOR EACH recipts WHERE recipts.bill# = bills.bill# .
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
+                tmpUnitPrice = itms.unitPriceS.
+            RELEASE itms.
+            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
+            tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
+            IF recipts.ItmDiscount = 100.00 THEN
+                tmpFIssu = tmpFIssu + (recipts.pieses * tmpUnitPrice).
+        END.
 
-            tmpDmg = 0.
-            tmpExp = 0.
-            tmpFIssu = 0.
+        FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
+            IF Payments.PayMethod = "Cash" THEN
+                tmpCash = tmpCash + Payments.Amount.
+            IF Payments.PayMethod = "Credit" THEN
+                tmpCredit = tmpCredit + Payments.Amount.
+            IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
+                tmpCheque = tmpCheque + Payments.Amount.
+        END.
 
-            IF recipts.damP > 0 THEN
-                tmpDmg = tmpDmg + (recipts.damP * itms.unitPriceS).
-            IF recipts.expP > 0 THEN
-                tmpExp = tmpExp + (recipts.expP * itms.unitPriceS).
-            IF recipts.ItmDiscount = 100 THEN
-                tmpFIssu = tmpFIssu + (recipts.pieses * itms.unitPriceS).
+        FIND FIRST area WHERE area.ID = bills.areaCode.
 
-            tmpCash   = 0.   
-            tmpCheque = 0.
-            tmpCredit = 0.
-
-            FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
-                IF Payments.PayMethod = "Cash" THEN
-                    tmpCash = tmpCash + Payments.Amount.
-                IF Payments.PayMethod = "Credit" THEN
-                    tmpCredit = tmpCredit + Payments.Amount.
-                IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
-                    tmpCheque = tmpCheque + Payments.Amount.
-            END.
-
-            FIND FIRST area WHERE area.ID = bills.areaCode.
-
-            CREATE tt-dailyReport.
-            tt-dailyReport.ID       = tmpID                .
-            tt-dailyReport.bill#    = bills.bill#          .
-            tt-dailyReport.BillNo   = bills.BillNo         .
-            tt-dailyReport.Customer = bills.cusName + " - " + area.descrip       .   
-            tt-dailyReport.TolSale  = bills.tol            .   
-            tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
-            tt-dailyReport.Ex       = tmpExp               .
-            tt-dailyReport.Dmg      = tmpDmg               .
-            tt-dailyReport.Discount = bills.discountRate   .
-            tt-dailyReport.Cash     = tmpCash              .
-            tt-dailyReport.Cheque   = tmpCheque            .
-            tt-dailyReport.Credit   = tmpCredit            .
-            tt-dailyReport.Gr       = recipts.goodreturnP  .
-            tt-dailyReport.FIsu     = tmpFIssu                    .
-            tt-dailyReport.DiscountAmount = bills.discountedAmount.
-
-            tmpID = tmpID + 1.
-
-        RELEASE recipts.
+        CREATE tt-dailyReport.
+        tt-dailyReport.ID       = tmpID                .
+        tt-dailyReport.bill#    = bills.bill#          .
+        tt-dailyReport.BillNo   = bills.BillNo         .
+        tt-dailyReport.Customer = bills.cusName + " - " + area.areaCode       .   
+        tt-dailyReport.TolSale  = bills.tol            .   
+        tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
+        tt-dailyReport.Ex       = tmpExp               .
+        tt-dailyReport.Dmg      = tmpDmg               .
+        tt-dailyReport.Discount = bills.discountedAmount   .
+        tt-dailyReport.Cash     = tmpCash              .
+        tt-dailyReport.Cheque   = tmpCheque            .
+        tt-dailyReport.Credit   = tmpCredit            .
+        tt-dailyReport.Gr       = tmpGR                .
+        tt-dailyReport.FIsu     = tmpFIssu             .
+        tt-dailyReport.DiscountAmount = bills.discountedAmount.
+        tt-dailyReport.Unpaid = bills.tol - bills.paidAmount.
+        
+        tmpID = tmpID + 1.
     END.
     END.
     ELSE
     DO:
-        FOR EACH bills WHERE MONTH(bills.bilDate) = MONTH(tempDate)  AND bills.vehNo = cmbVeh  BY bills.BillNo.
-        FIND FIRST recipts WHERE recipts.bill# = bills.bill# NO-ERROR.
+    FOR EACH bills WHERE MONTH(bills.bilDate) = MONTH(tempDate)  AND bills.vehNo = cmbVeh  BY bills.BillNo.
+        tmpGR = 0.
+        tmpDmg = 0.
+        tmpExp = 0.
+        tmpFIssu = 0.
+        tmpCash   = 0.   
+        tmpCheque = 0.
+        tmpCredit = 0.
+        tmpUnitPrice = 0.
+
+        FOR EACH recipts WHERE recipts.bill# = bills.bill# .
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
+                tmpUnitPrice = itms.unitPriceS.
+            RELEASE itms.
+            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
+            tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
+            IF recipts.ItmDiscount = 100.00 THEN
+                tmpFIssu = tmpFIssu + (recipts.pieses * tmpUnitPrice).
+        END.
 
-            tmpDmg = 0.
-            tmpExp = 0.
-            tmpFIssu = 0.
+        FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
+            IF Payments.PayMethod = "Cash" THEN
+                tmpCash = tmpCash + Payments.Amount.
+            IF Payments.PayMethod = "Credit" THEN
+                tmpCredit = tmpCredit + Payments.Amount.
+            IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
+                tmpCheque = tmpCheque + Payments.Amount.
+        END.
 
-            IF recipts.damP > 0 THEN
-                tmpDmg = tmpDmg + (recipts.damP * itms.unitPriceS).
-            IF recipts.expP > 0 THEN
-                tmpExp = tmpExp + (recipts.expP * itms.unitPriceS).
-            IF recipts.ItmDiscount = 100 THEN
-                tmpFIssu = tmpFIssu + (recipts.pieses * itms.unitPriceS).
+        FIND FIRST area WHERE area.ID = bills.areaCode.
 
-            tmpCash   = 0.   
-            tmpCheque = 0.
-            tmpCredit = 0.
-
-            FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
-                IF Payments.PayMethod = "Cash" THEN
-                    tmpCash = tmpCash + Payments.Amount.
-                IF Payments.PayMethod = "Credit" THEN
-                    tmpCredit = tmpCredit + Payments.Amount.
-                IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
-                    tmpCheque = tmpCheque + Payments.Amount.
-            END.
-
-            FIND FIRST area WHERE area.ID = bills.areaCode.
-
-            CREATE tt-dailyReport.
-            tt-dailyReport.ID       = tmpID                .
-            tt-dailyReport.bill#    = bills.bill#          .
-            tt-dailyReport.BillNo   = bills.BillNo         .
-            tt-dailyReport.Customer = bills.cusName + " - " + area.descrip       .   
-            tt-dailyReport.TolSale  = bills.tol            .   
-            tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
-            tt-dailyReport.Ex       = tmpExp               .
-            tt-dailyReport.Dmg      = tmpDmg               .
-            tt-dailyReport.Discount = bills.discountRate   .
-            tt-dailyReport.Cash     = tmpCash              .
-            tt-dailyReport.Cheque   = tmpCheque            .
-            tt-dailyReport.Credit   = tmpCredit            .
-            tt-dailyReport.Gr       = recipts.goodreturnP  .
-            tt-dailyReport.FIsu     = tmpFIssu                    .
-            tt-dailyReport.DiscountAmount = bills.discountedAmount.
-
-            tmpID = tmpID + 1.
-
-        RELEASE recipts.
+        CREATE tt-dailyReport.
+        tt-dailyReport.ID       = tmpID                .
+        tt-dailyReport.bill#    = bills.bill#          .
+        tt-dailyReport.BillNo   = bills.BillNo         .
+        tt-dailyReport.Customer = bills.cusName + " - " + area.areaCode       .   
+        tt-dailyReport.TolSale  = bills.tol            .   
+        tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
+        tt-dailyReport.Ex       = tmpExp               .
+        tt-dailyReport.Dmg      = tmpDmg               .
+        tt-dailyReport.Discount = bills.discountedAmount   .
+        tt-dailyReport.Cash     = tmpCash              .
+        tt-dailyReport.Cheque   = tmpCheque            .
+        tt-dailyReport.Credit   = tmpCredit            .
+        tt-dailyReport.Gr       = tmpGR                .
+        tt-dailyReport.FIsu     = tmpFIssu             .
+        tt-dailyReport.DiscountAmount = bills.discountedAmount.
+        tt-dailyReport.Unpaid = bills.tol - bills.paidAmount.
+        
+        tmpID = tmpID + 1.
         END.
     END.
 END PROCEDURE.
@@ -1140,109 +1177,111 @@ EMPTY TEMP-TABLE tt-dailyReport.
     IF cmbVeh = -1 THEN
     DO:
     FOR EACH bills WHERE YEAR(bills.bilDate) = YEAR(tempDate) BY bills.BillNo.
-        FIND FIRST recipts WHERE recipts.bill# = bills.bill# NO-ERROR.
+    tmpGR = 0.
+        tmpDmg = 0.
+        tmpExp = 0.
+        tmpFIssu = 0.
+        tmpCash   = 0.   
+        tmpCheque = 0.
+        tmpCredit = 0.
+        tmpUnitPrice = 0.
+
+        FOR EACH recipts WHERE recipts.bill# = bills.bill# .
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
+                tmpUnitPrice = itms.unitPriceS.
+            RELEASE itms.
+            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
+            tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
+            IF recipts.ItmDiscount = 100.00 THEN
+                tmpFIssu = tmpFIssu + (recipts.pieses * tmpUnitPrice).
+        END.
 
-            tmpDmg = 0.
-            tmpExp = 0.
-            tmpFIssu = 0.
+        FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
+            IF Payments.PayMethod = "Cash" THEN
+                tmpCash = tmpCash + Payments.Amount.
+            IF Payments.PayMethod = "Credit" THEN
+                tmpCredit = tmpCredit + Payments.Amount.
+            IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
+                tmpCheque = tmpCheque + Payments.Amount.
+        END.
 
-            IF recipts.damP > 0 THEN
-                tmpDmg = tmpDmg + (recipts.damP * itms.unitPriceS).
-            IF recipts.expP > 0 THEN
-                tmpExp = tmpExp + (recipts.expP * itms.unitPriceS).
-            IF recipts.ItmDiscount = 100 THEN
-                tmpFIssu = tmpFIssu + (recipts.pieses * itms.unitPriceS).
+        FIND FIRST area WHERE area.ID = bills.areaCode.
 
-            tmpCash   = 0.   
-            tmpCheque = 0.
-            tmpCredit = 0.
-
-            FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
-                IF Payments.PayMethod = "Cash" THEN
-                    tmpCash = tmpCash + Payments.Amount.
-                IF Payments.PayMethod = "Credit" THEN
-                    tmpCredit = tmpCredit + Payments.Amount.
-                IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
-                    tmpCheque = tmpCheque + Payments.Amount.
-            END.
-
-            FIND FIRST area WHERE area.ID = bills.areaCode.
-
-            CREATE tt-dailyReport.
-            tt-dailyReport.ID       = tmpID                .
-            tt-dailyReport.bill#    = bills.bill#          .
-            tt-dailyReport.BillNo   = bills.BillNo         .
-            tt-dailyReport.Customer = bills.cusName + " - " + area.descrip       .   
-            tt-dailyReport.TolSale  = bills.tol            .   
-            tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
-            tt-dailyReport.Ex       = tmpExp               .
-            tt-dailyReport.Dmg      = tmpDmg               .
-            tt-dailyReport.Discount = bills.discountRate   .
-            tt-dailyReport.Cash     = tmpCash              .
-            tt-dailyReport.Cheque   = tmpCheque            .
-            tt-dailyReport.Credit   = tmpCredit            .
-            tt-dailyReport.Gr       = recipts.goodreturnP  .
-            tt-dailyReport.FIsu     = tmpFIssu                    .
-            tt-dailyReport.DiscountAmount = bills.discountedAmount.
-
-            tmpID = tmpID + 1.
-
-        RELEASE recipts.
+        CREATE tt-dailyReport.
+        tt-dailyReport.ID       = tmpID                .
+        tt-dailyReport.bill#    = bills.bill#          .
+        tt-dailyReport.BillNo   = bills.BillNo         .
+        tt-dailyReport.Customer = bills.cusName + " - " + area.areaCode       .   
+        tt-dailyReport.TolSale  = bills.tol            .   
+        tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
+        tt-dailyReport.Ex       = tmpExp               .
+        tt-dailyReport.Dmg      = tmpDmg               .
+        tt-dailyReport.Discount = bills.discountedAmount   .
+        tt-dailyReport.Cash     = tmpCash              .
+        tt-dailyReport.Cheque   = tmpCheque            .
+        tt-dailyReport.Credit   = tmpCredit            .
+        tt-dailyReport.Gr       = tmpGR                .
+        tt-dailyReport.FIsu     = tmpFIssu             .
+        tt-dailyReport.DiscountAmount = bills.discountedAmount.
+        tt-dailyReport.Unpaid = bills.tol - bills.paidAmount.
+        
+        tmpID = tmpID + 1.
     END.
     END.
     ELSE
     DO:
     FOR EACH bills WHERE YEAR(bills.bilDate) = YEAR(tempDate) AND bills.vehNo = cmbVeh  BY bills.BillNo.
-        FIND FIRST recipts WHERE recipts.bill# = bills.bill# NO-ERROR.
+    tmpGR = 0.
+        tmpDmg = 0.
+        tmpExp = 0.
+        tmpFIssu = 0.
+        tmpCash   = 0.   
+        tmpCheque = 0.
+        tmpCredit = 0.
+        tmpUnitPrice = 0.
+
+        FOR EACH recipts WHERE recipts.bill# = bills.bill# .
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
+                tmpUnitPrice = itms.unitPriceS.
+            RELEASE itms.
+            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
+            tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
+            IF recipts.ItmDiscount = 100.00 THEN
+                tmpFIssu = tmpFIssu + (recipts.pieses * tmpUnitPrice).
+        END.
 
-            tmpDmg = 0.
-            tmpExp = 0.
-            tmpFIssu = 0.
+        FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
+            IF Payments.PayMethod = "Cash" THEN
+                tmpCash = tmpCash + Payments.Amount.
+            IF Payments.PayMethod = "Credit" THEN
+                tmpCredit = tmpCredit + Payments.Amount.
+            IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
+                tmpCheque = tmpCheque + Payments.Amount.
+        END.
 
-            IF recipts.damP > 0 THEN
-                tmpDmg = tmpDmg + (recipts.damP * itms.unitPriceS).
-            IF recipts.expP > 0 THEN
-                tmpExp = tmpExp + (recipts.expP * itms.unitPriceS).
-            IF recipts.ItmDiscount = 100 THEN
-                tmpFIssu = tmpFIssu + (recipts.pieses * itms.unitPriceS).
+        FIND FIRST area WHERE area.ID = bills.areaCode.
 
-            tmpCash   = 0.   
-            tmpCheque = 0.
-            tmpCredit = 0.
-
-            FOR EACH Payments WHERE Payments.bill# = bills.bill#  .
-                IF Payments.PayMethod = "Cash" THEN
-                    tmpCash = tmpCash + Payments.Amount.
-                IF Payments.PayMethod = "Credit" THEN
-                    tmpCredit = tmpCredit + Payments.Amount.
-                IF Payments.PayMethod = "Cheque" AND Payments.stat = YES THEN
-                    tmpCheque = tmpCheque + Payments.Amount.
-            END.
-
-            FIND FIRST area WHERE area.ID = bills.areaCode.
-
-            CREATE tt-dailyReport.
-            tt-dailyReport.ID       = tmpID                .
-            tt-dailyReport.bill#    = bills.bill#          .
-            tt-dailyReport.BillNo   = bills.BillNo         .
-            tt-dailyReport.Customer = bills.cusName + " - " + area.descrip       .   
-            tt-dailyReport.TolSale  = bills.tol            .   
-            tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
-            tt-dailyReport.Ex       = tmpExp               .
-            tt-dailyReport.Dmg      = tmpDmg               .
-            tt-dailyReport.Discount = bills.discountRate   .
-            tt-dailyReport.Cash     = tmpCash              .
-            tt-dailyReport.Cheque   = tmpCheque            .
-            tt-dailyReport.Credit   = tmpCredit            .
-            tt-dailyReport.Gr       = recipts.goodreturnP  .
-            tt-dailyReport.FIsu     = tmpFIssu                    .
-            tt-dailyReport.DiscountAmount = bills.discountedAmount.
-
-            tmpID = tmpID + 1.
-
-        RELEASE recipts.
+        CREATE tt-dailyReport.
+        tt-dailyReport.ID       = tmpID                .
+        tt-dailyReport.bill#    = bills.bill#          .
+        tt-dailyReport.BillNo   = bills.BillNo         .
+        tt-dailyReport.Customer = bills.cusName + " - " + area.areaCode       .   
+        tt-dailyReport.TolSale  = bills.tol            .   
+        tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
+        tt-dailyReport.Ex       = tmpExp               .
+        tt-dailyReport.Dmg      = tmpDmg               .
+        tt-dailyReport.Discount = bills.discountedAmount   .
+        tt-dailyReport.Cash     = tmpCash              .
+        tt-dailyReport.Cheque   = tmpCheque            .
+        tt-dailyReport.Credit   = tmpCredit            .
+        tt-dailyReport.Gr       = tmpGR                .
+        tt-dailyReport.FIsu     = tmpFIssu             .
+        tt-dailyReport.DiscountAmount = bills.discountedAmount.
+        tt-dailyReport.Unpaid = bills.tol - bills.paidAmount.
+        
+        tmpID = tmpID + 1.
     END.
     END.
 

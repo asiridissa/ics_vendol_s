@@ -194,9 +194,9 @@ ON END-ERROR OF C-Win /* ICS - Login */
 OR ENDKEY OF {&WINDOW-NAME} ANYWHERE DO:
   /* This case occurs when the user presses the "Esc" key.
      In a persistently run window, just ignore this.  If we did not, the
-     application would exit. 
+     application would exit. */ 
  
-  IF THIS-PROCEDURE:PERSISTENT THEN  */ RETURN NO-APPLY.
+  IF THIS-PROCEDURE:PERSISTENT THEN  RETURN NO-APPLY.
   QUIT.
 END.
 
@@ -227,7 +227,9 @@ DO:
             session_UsersName = "Super Admin".
                APPLY "WINDOW-CLOSE":U TO {&WINDOW-NAME}.
                RUN VALUE("Tree.r").
+               RUN logger.r("Logged in").
                QUIT.
+               RUN logger.r("Logged out").
         END. 
 
     IF fillUsrName = "" THEN
@@ -258,9 +260,10 @@ DO:
             ELSE
             DO:
                APPLY "WINDOW-CLOSE":U TO {&WINDOW-NAME}.
+               RUN logger.r("Password changed").
                RUN VALUE("Tree.r").
-/*                RUN VALUE("menu.r"). */
                QUIT.
+               RUN logger.r("Logged out").
             END.
         END.
         ELSE
@@ -277,7 +280,9 @@ DO:
                 MESSAGE "Password is incorrect." SKIP "Try again later." VIEW-AS ALERT-BOX ERROR BUTTONS OK.
                 QUIT.
             END.
+            RUN logger.r("Wrong password " + STRING(session_LoginAttempt)).
         END.
+
     END.
     ELSE
     DO:

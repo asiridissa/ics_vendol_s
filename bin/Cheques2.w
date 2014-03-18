@@ -19,7 +19,8 @@ DEFINE VARIABLE calendr3 AS COM-HANDLE   NO-UNDO.
     DEFINE VARIABLE tempDate AS DATE        NO-UNDO.
 
 DEFINE TEMP-TABLE tt-chqBills
-    FIELD bill#        AS INTEGER LABEL "   Bill No        "
+    FIELD bill#        AS INTEGER LABEL "   Bill #        "
+    FIELD billNo        AS INTEGER LABEL "   Bill No        "
     FIELD billDate     AS DATE    LABEL " Bill Date "  
     FIELD tol          AS DECIMAL LABEL "       Total        "
     FIELD creditAmount AS DECIMAL LABEL "       To Collect   "
@@ -59,7 +60,7 @@ cheques.crDate customer.CusArea
 
 
 /* Definitions for BROWSE brwCreditAmounts                              */
-&Scoped-define FIELDS-IN-QUERY-brwCreditAmounts tt-chqBills.bill# tt-chqBills.billDate tt-chqBills.tol tt-chqBills.creditAmount tt-chqBills.debitAmount   
+&Scoped-define FIELDS-IN-QUERY-brwCreditAmounts tt-chqBills.billNo tt-chqBills.billDate tt-chqBills.tol tt-chqBills.creditAmount tt-chqBills.debitAmount   
 &Scoped-define ENABLED-FIELDS-IN-QUERY-brwCreditAmounts   
 &Scoped-define SELF-NAME brwCreditAmounts
 &Scoped-define QUERY-STRING-brwCreditAmounts FOR EACH tt-chqBills BY tt-chqBills.billDate
@@ -74,11 +75,12 @@ cheques.crDate customer.CusArea
     ~{&OPEN-QUERY-brwCreditAmounts}
 
 /* Standard List Definitions                                            */
-&Scoped-Define ENABLED-OBJECTS btnSearch filSearch btnGo radFilter ~
-brwCheques brwCreditAmounts btnAdd btnMod btnClose 
-&Scoped-Define DISPLAYED-OBJECTS filSearch cmbSearchCol cmbSearchArea ~
-cmbSearchTime radFilter filID filBIll# cmbArea cmbCus filTotal filToCollect ~
-filChqNo filUnDedicated filChqAmount filAmount filBank filBranch radStat 
+&Scoped-Define ENABLED-OBJECTS radFilter brwCheques brwCreditAmounts btnGo ~
+filSearch btnAdd btnSearch btnMod btnClose RECT-5 RECT-6 
+&Scoped-Define DISPLAYED-OBJECTS radFilter filID filBIll# cmbArea cmbCus ~
+filTotal filChqNo filToCollect filChqAmount filSearch filUnDedicated ~
+filBank cmbSearchCol filAmount cmbSearchArea filBranch cmbSearchTime ~
+radStat 
 
 /* Custom List Definitions                                              */
 /* List-1,List-2,List-3,List-4,List-5,List-6                            */
@@ -119,20 +121,20 @@ DEFINE BUTTON btnDel
      SIZE 15 BY 1.
 
 DEFINE BUTTON btnDoPay 
-     LABEL "Pament" 
-     SIZE 14 BY 1.
+     LABEL "Start" 
+     SIZE 12 BY 1.
 
 DEFINE BUTTON btnGo 
      LABEL "Go" 
      SIZE 5.86 BY 1.
 
 DEFINE BUTTON btnMod 
-     LABEL "Modify" 
+     LABEL "Modify / Pay" 
      SIZE 15 BY 1.
 
 DEFINE BUTTON btnPay 
      LABEL "Pay >>" 
-     SIZE 14 BY 1.
+     SIZE 12 BY 1.
 
 DEFINE BUTTON btnReturned 
      LABEL "Return" 
@@ -252,7 +254,7 @@ DEFINE VARIABLE filUnDedicated AS DECIMAL FORMAT ">>>,>>>,>>9.99":U INITIAL 0
      LABEL "Available" 
      VIEW-AS FILL-IN 
      SIZE 14 BY .88
-     BGCOLOR 15 FGCOLOR 1  NO-UNDO.
+     BGCOLOR 15 FGCOLOR 2  NO-UNDO.
 
 DEFINE VARIABLE radFilter AS INTEGER 
      VIEW-AS RADIO-SET HORIZONTAL
@@ -260,7 +262,7 @@ DEFINE VARIABLE radFilter AS INTEGER
           "All", 1,
 "Today", 2,
 "Chq Date :", 3
-     SIZE 23.57 BY .88 NO-UNDO.
+     SIZE 23.57 BY 1 NO-UNDO.
 
 DEFINE VARIABLE radStat AS CHARACTER INITIAL "P" 
      VIEW-AS RADIO-SET HORIZONTAL
@@ -268,8 +270,16 @@ DEFINE VARIABLE radStat AS CHARACTER INITIAL "P"
           "Pending", "P",
 "Banked", "B",
 "Cleared", "C",
-"Returned", "R"
-     SIZE 38 BY .73 NO-UNDO.
+"Bounced", "R"
+     SIZE 36.14 BY .73 NO-UNDO.
+
+DEFINE RECTANGLE RECT-5
+     EDGE-PIXELS 2 GRAPHIC-EDGE  NO-FILL  GROUP-BOX  ROUNDED 
+     SIZE 95.43 BY 7.81.
+
+DEFINE RECTANGLE RECT-6
+     EDGE-PIXELS 2 GRAPHIC-EDGE  NO-FILL  GROUP-BOX  ROUNDED 
+     SIZE 48.29 BY 7.81.
 
 /* Query definitions                                                    */
 &ANALYZE-SUSPEND
@@ -300,63 +310,67 @@ DEFINE BROWSE brwCheques
             WIDTH 5
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
-    WITH NO-ROW-MARKERS SEPARATORS SIZE 144 BY 15.88
+    WITH NO-ROW-MARKERS SEPARATORS SIZE 144 BY 15.35
          FONT 10
-         TITLE "Cheque Details" ROW-HEIGHT-CHARS .66 FIT-LAST-COLUMN.
+         TITLE "Cheque Details" ROW-HEIGHT-CHARS .55 FIT-LAST-COLUMN.
 
 DEFINE BROWSE brwCreditAmounts
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS brwCreditAmounts C-Win _FREEFORM
   QUERY brwCreditAmounts DISPLAY
-      tt-chqBills.bill# FORMAT ">>>>>>>9":U
+      tt-chqBills.billNo FORMAT ">>>>>>>9":U
  tt-chqBills.billDate FORMAT "99/99/9999":U
  tt-chqBills.tol FORMAT ">>>,>>>,>>>,>>9.99":U
  tt-chqBills.creditAmount FORMAT ">>>,>>>,>>>,>>9.99":U
  tt-chqBills.debitAmount FORMAT ">>>,>>>,>>>,>>9.99":U
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
-    WITH NO-ROW-MARKERS SEPARATORS SIZE 69 BY 7.27
+    WITH NO-ROW-MARKERS SEPARATORS SIZE 69 BY 7.77
          FONT 10
-         TITLE "Pending Bills of the Customer" ROW-HEIGHT-CHARS .65 FIT-LAST-COLUMN.
+         TITLE "Pending Bills of the Customer" ROW-HEIGHT-CHARS .55 FIT-LAST-COLUMN.
 
 
 /* ************************  Frame Definitions  *********************** */
 
 DEFINE FRAME DEFAULT-FRAME
-     btnSearch AT ROW 1.08 COL 136.43 WIDGET-ID 134 NO-TAB-STOP 
-     filSearch AT ROW 1.15 COL 60.57 COLON-ALIGNED WIDGET-ID 160 NO-TAB-STOP 
-     cmbSearchCol AT ROW 1.15 COL 85.86 COLON-ALIGNED NO-LABEL WIDGET-ID 136 NO-TAB-STOP 
-     cmbSearchArea AT ROW 1.15 COL 103.86 COLON-ALIGNED WIDGET-ID 156 NO-TAB-STOP 
-     cmbSearchTime AT ROW 1.15 COL 122 COLON-ALIGNED WIDGET-ID 158 NO-TAB-STOP 
-     btnGo AT ROW 1.19 COL 48.29 WIDGET-ID 166 NO-TAB-STOP 
      radFilter AT ROW 1.23 COL 7.43 NO-LABEL WIDGET-ID 128
      brwCheques AT ROW 2.35 COL 1 WIDGET-ID 200
-     filID AT ROW 18.5 COL 8.86 COLON-ALIGNED WIDGET-ID 2
-     brwCreditAmounts AT ROW 18.58 COL 75.72 WIDGET-ID 300
-     filBIll# AT ROW 18.62 COL 58.86 COLON-ALIGNED WIDGET-ID 108
-     cmbArea AT ROW 19.42 COL 8.86 COLON-ALIGNED WIDGET-ID 80
-     cmbCus AT ROW 20.38 COL 8.86 COLON-ALIGNED WIDGET-ID 92
-     filTotal AT ROW 20.42 COL 58.86 COLON-ALIGNED WIDGET-ID 110
-     filToCollect AT ROW 21.31 COL 58.86 COLON-ALIGNED WIDGET-ID 114
-     filChqNo AT ROW 21.35 COL 9.14 COLON-ALIGNED WIDGET-ID 94
-     filUnDedicated AT ROW 22.27 COL 58.86 COLON-ALIGNED WIDGET-ID 122
-     filChqAmount AT ROW 22.31 COL 8.86 COLON-ALIGNED WIDGET-ID 96
-     filAmount AT ROW 23.23 COL 58.86 COLON-ALIGNED WIDGET-ID 116
-     filBank AT ROW 23.27 COL 8.86 COLON-ALIGNED WIDGET-ID 98
-     btnDoPay AT ROW 24.19 COL 46.86 WIDGET-ID 120
-     btnPay AT ROW 24.19 COL 60.86 WIDGET-ID 118
-     filBranch AT ROW 24.23 COL 8.86 COLON-ALIGNED WIDGET-ID 100
-     radStat AT ROW 25.19 COL 10.86 NO-LABEL WIDGET-ID 102
+     brwCreditAmounts AT ROW 17.81 COL 76 WIDGET-ID 300
+     filID AT ROW 18.04 COL 10.86 COLON-ALIGNED WIDGET-ID 2
+     filBIll# AT ROW 18.08 COL 58.43 COLON-ALIGNED WIDGET-ID 108
+     cmbArea AT ROW 18.96 COL 10.86 COLON-ALIGNED WIDGET-ID 80
+     cmbCus AT ROW 19.92 COL 10.86 COLON-ALIGNED WIDGET-ID 92
+     filTotal AT ROW 20.15 COL 58.43 COLON-ALIGNED WIDGET-ID 110
+     btnGo AT ROW 1.23 COL 48.29 WIDGET-ID 166 NO-TAB-STOP 
+     filChqNo AT ROW 20.88 COL 10.86 COLON-ALIGNED WIDGET-ID 94
+     filToCollect AT ROW 21.15 COL 58.43 COLON-ALIGNED WIDGET-ID 114
+     filChqAmount AT ROW 21.85 COL 10.86 COLON-ALIGNED WIDGET-ID 96
+     filSearch AT ROW 1.23 COL 60.57 COLON-ALIGNED WIDGET-ID 160 NO-TAB-STOP 
+     filUnDedicated AT ROW 22.19 COL 58.43 COLON-ALIGNED WIDGET-ID 122
+     filBank AT ROW 22.81 COL 10.86 COLON-ALIGNED WIDGET-ID 98
+     cmbSearchCol AT ROW 1.23 COL 85.86 COLON-ALIGNED NO-LABEL WIDGET-ID 136 NO-TAB-STOP 
+     filAmount AT ROW 23.27 COL 58.43 COLON-ALIGNED WIDGET-ID 116
+     cmbSearchArea AT ROW 1.23 COL 103.86 COLON-ALIGNED WIDGET-ID 156 NO-TAB-STOP 
+     filBranch AT ROW 23.77 COL 10.86 COLON-ALIGNED WIDGET-ID 100
+     btnDoPay AT ROW 24.42 COL 50.43 WIDGET-ID 120
+     cmbSearchTime AT ROW 1.23 COL 122 COLON-ALIGNED WIDGET-ID 158 NO-TAB-STOP 
+     btnPay AT ROW 24.42 COL 62.43 WIDGET-ID 118
+     radStat AT ROW 24.73 COL 12.14 NO-LABEL WIDGET-ID 102
      btnAdd AT ROW 26.12 COL 12.86 WIDGET-ID 30
+     btnSearch AT ROW 1.19 COL 136.43 WIDGET-ID 134 NO-TAB-STOP 
      btnMod AT ROW 26.12 COL 29.86 WIDGET-ID 32
      btnDel AT ROW 26.12 COL 46.86 WIDGET-ID 34
      btnReturned AT ROW 26.12 COL 63.86 WIDGET-ID 162
      btnSave AT ROW 26.12 COL 84.86 WIDGET-ID 38
      btnCancel AT ROW 26.12 COL 101.86 WIDGET-ID 36
      btnClose AT ROW 26.12 COL 118.86 WIDGET-ID 40
+     "Bill Date:" VIEW-AS TEXT
+          SIZE 7.29 BY .62 AT ROW 19.15 COL 52.86 WIDGET-ID 172
      "View :" VIEW-AS TEXT
-          SIZE 5.29 BY .58 AT ROW 1.35 COL 1.72 WIDGET-ID 132
+          SIZE 5.29 BY 1 AT ROW 1.23 COL 1.72 WIDGET-ID 132
      "Status:" VIEW-AS TEXT
-          SIZE 5.57 BY .62 AT ROW 25.31 COL 5 WIDGET-ID 106
+          SIZE 5.57 BY .62 AT ROW 24.77 COL 6.29 WIDGET-ID 106
+     RECT-5 AT ROW 17.81 COL 49.57 WIDGET-ID 168
+     RECT-6 AT ROW 17.81 COL 1.57 WIDGET-ID 174
     WITH 1 DOWN NO-BOX KEEP-TAB-ORDER OVERLAY 
          SIDE-LABELS NO-UNDERLINE THREE-D 
          AT COL 1 ROW 1
@@ -381,8 +395,8 @@ IF SESSION:DISPLAY-TYPE = "GUI":U THEN
   CREATE WINDOW C-Win ASSIGN
          HIDDEN             = YES
          TITLE              = "Cheques"
-         COLUMN             = 1
-         ROW                = 1
+         COLUMN             = 1.57
+         ROW                = 1.19
          HEIGHT             = 26.54
          WIDTH              = 144.29
          MAX-HEIGHT         = 27.15
@@ -411,9 +425,9 @@ ELSE {&WINDOW-NAME} = CURRENT-WINDOW.
 /* SETTINGS FOR WINDOW C-Win
   VISIBLE,,RUN-PERSISTENT                                               */
 /* SETTINGS FOR FRAME DEFAULT-FRAME
-   FRAME-NAME                                                           */
+   FRAME-NAME Custom                                                    */
 /* BROWSE-TAB brwCheques radFilter DEFAULT-FRAME */
-/* BROWSE-TAB brwCreditAmounts filID DEFAULT-FRAME */
+/* BROWSE-TAB brwCreditAmounts brwCheques DEFAULT-FRAME */
 ASSIGN 
        customer.CusArea:VISIBLE IN BROWSE brwCheques = FALSE.
 
@@ -518,9 +532,9 @@ OPEN QUERY brwCreditAmounts FOR EACH tt-chqBills BY tt-chqBills.billDate.
 
 CREATE CONTROL-FRAME CtrlFrame-4 ASSIGN
        FRAME           = FRAME DEFAULT-FRAME:HANDLE
-       ROW             = 1.27
+       ROW             = 1.31
        COLUMN          = 31.57
-       HEIGHT          = .81
+       HEIGHT          = .88
        WIDTH           = 16.14
        WIDGET-ID       = 164
        HIDDEN          = no
@@ -528,8 +542,8 @@ CREATE CONTROL-FRAME CtrlFrame-4 ASSIGN
 
 CREATE CONTROL-FRAME CtrlFrame-2 ASSIGN
        FRAME           = FRAME DEFAULT-FRAME:HANDLE
-       ROW             = 18.54
-       COLUMN          = 25
+       ROW             = 18.08
+       COLUMN          = 27
        HEIGHT          = .81
        WIDTH           = 20.86
        WIDGET-ID       = 72
@@ -538,17 +552,17 @@ CREATE CONTROL-FRAME CtrlFrame-2 ASSIGN
 
 CREATE CONTROL-FRAME CtrlFrame-3 ASSIGN
        FRAME           = FRAME DEFAULT-FRAME:HANDLE
-       ROW             = 19.54
-       COLUMN          = 53.86
+       ROW             = 19.19
+       COLUMN          = 60.43
        HEIGHT          = .81
-       WIDTH           = 20.86
+       WIDTH           = 14
        WIDGET-ID       = 112
        HIDDEN          = no
        SENSITIVE       = yes.
 /* CtrlFrame-4 OCXINFO:CREATE-CONTROL from: {20DD1B9E-87C4-11D1-8BE3-0000F8754DA1} type: DTPicker */
 /* CtrlFrame-2 OCXINFO:CREATE-CONTROL from: {20DD1B9E-87C4-11D1-8BE3-0000F8754DA1} type: DTPicker */
 /* CtrlFrame-3 OCXINFO:CREATE-CONTROL from: {20DD1B9E-87C4-11D1-8BE3-0000F8754DA1} type: DTPicker2 */
-      CtrlFrame-4:MOVE-AFTER(radFilter:HANDLE IN FRAME DEFAULT-FRAME).
+      CtrlFrame-4:MOVE-AFTER(brwCreditAmounts:HANDLE IN FRAME DEFAULT-FRAME).
       CtrlFrame-2:MOVE-AFTER(filID:HANDLE IN FRAME DEFAULT-FRAME).
       CtrlFrame-3:MOVE-AFTER(cmbArea:HANDLE IN FRAME DEFAULT-FRAME).
 
@@ -640,7 +654,7 @@ ON VALUE-CHANGED OF brwCreditAmounts IN FRAME DEFAULT-FRAME /* Pending Bills of 
 DO:
   IF AVAILABLE tt-chqBills THEN
   DO:
-      filBIll# = tt-chqBills.bill#.
+      filBIll# = tt-chqBills.billNo.
       calendr2:VALUE = tt-chqBills.billDate.
       filToCollect = tt-chqBills.creditAmount.
       filTotal = tt-chqBills.tol.
@@ -772,7 +786,7 @@ END.
 
 &Scoped-define SELF-NAME btnDoPay
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL btnDoPay C-Win
-ON CHOOSE OF btnDoPay IN FRAME DEFAULT-FRAME /* Pament */
+ON CHOOSE OF btnDoPay IN FRAME DEFAULT-FRAME /* Start */
 DO:
   
      ENABLE filAmount btnPay WITH FRAME {&FRAME-NAME}.
@@ -797,7 +811,7 @@ END.
 
 &Scoped-define SELF-NAME btnMod
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL btnMod C-Win
-ON CHOOSE OF btnMod IN FRAME DEFAULT-FRAME /* Modify */
+ON CHOOSE OF btnMod IN FRAME DEFAULT-FRAME /* Modify / Pay */
 DO:
   IF filID <> 0 THEN
   DO:
@@ -1414,7 +1428,7 @@ DO ON ERROR   UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK
 
   APPLY "VALUE-CHANGED":U TO brwCheques.
 
-  RUN Loader.
+  RUN loader.
 
   IF NOT THIS-PROCEDURE:PERSISTENT THEN
     WAIT-FOR CLOSE OF THIS-PROCEDURE.
@@ -1458,6 +1472,7 @@ EMPTY TEMP-TABLE tt-chqBills.
 FOR EACH bills WHERE bills.cusID = cmbCus AND (bills.tol - bills.paidAmount) > 0.
     CREATE tt-chqBills.
          tt-chqBills.bill#        = bills.bill#.
+         tt-chqBills.billNo        = bills.billNo.
          tt-chqBills.billDate     = bills.bilDate.
          tt-chqBills.creditAmount = (bills.tol - bills.paidAmount).
          tt-chqBills.tol          = bills.tol.
@@ -1470,7 +1485,8 @@ FOR EACH billChqAssoc WHERE billChqAssoc.chq# = filChqNo.
     tempUnDedicated = tempUnDedicated - billChqAssoc.amount.
 END.
 
-filUnDedicated = tempUnDedicated.
+IF tempUnDedicated >= 0 THEN filUnDedicated = tempUnDedicated.
+ELSE filUnDedicated = 0.
 
 DISPLAY filUnDedicated WITH FRAME {&FRAME-NAME}.
 
@@ -1611,12 +1627,12 @@ PROCEDURE enable_UI :
                Settings" section of the widget Property Sheets.
 ------------------------------------------------------------------------------*/
   RUN control_load.
-  DISPLAY filSearch cmbSearchCol cmbSearchArea cmbSearchTime radFilter filID 
-          filBIll# cmbArea cmbCus filTotal filToCollect filChqNo filUnDedicated 
-          filChqAmount filAmount filBank filBranch radStat 
+  DISPLAY radFilter filID filBIll# cmbArea cmbCus filTotal filChqNo filToCollect 
+          filChqAmount filSearch filUnDedicated filBank cmbSearchCol filAmount 
+          cmbSearchArea filBranch cmbSearchTime radStat 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
-  ENABLE btnSearch filSearch btnGo radFilter brwCheques brwCreditAmounts btnAdd 
-         btnMod btnClose 
+  ENABLE radFilter brwCheques brwCreditAmounts btnGo filSearch btnAdd btnSearch 
+         btnMod btnClose RECT-5 RECT-6 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
   {&OPEN-BROWSERS-IN-QUERY-DEFAULT-FRAME}
   VIEW C-Win.
@@ -1646,8 +1662,8 @@ END PROCEDURE.
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE Loader C-Win 
-PROCEDURE Loader :
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE loader C-Win 
+PROCEDURE loader :
 MESSAGE "Conferm to add a new cheque.             " SKIP
     "  Yes - Add new cheque." SKIP
     "  No  - Pay from Available Cheque." SKIP
@@ -1660,6 +1676,7 @@ DO:
     cmbCus = inCus.
     DISPLAY cmbArea cmbCus WITH FRAME DEFAULT-FRAME.
 END.
+
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */
