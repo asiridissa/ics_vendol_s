@@ -735,3 +735,27 @@
 [2014/03/11@23:34:45.555+2300] P-4272       T-4836  I ABL      : (15109) At Database close the number of live transactions is 0. 
 [2014/03/11@23:34:45.555+2300] P-4272       T-4836  I ABL      : (15743) Before Image Log Completion at Block 7 Offset 7505. 
 [2014/03/11@23:34:45.616+2300] P-4272       T-4836  I ABL      : (334)   Single-user session end. 
+
+                Tue Mar 18 13:44:44 2014
+[2014/03/18@13:44:44.031+2300] P-5308       T-4128  I ABL      : (451)   Single-user session begin for AZ on CON:. 
+[2014/03/18@13:44:44.257+2300] P-5308       T-4128  I ABL      : (15321) Before Image Log Initialization at block 7  offset 7505. 
+[2014/03/18@13:44:44.365+2300] P-5308       T-4128  I ABL      : (12699) Database bak Options:  
+[2014/03/18@13:44:49.760+2300] P-5308       T-4128  I ABL      : (15109) At Database close the number of live transactions is 0. 
+[2014/03/18@13:44:49.761+2300] P-5308       T-4128  I ABL      : (15743) Before Image Log Completion at Block 7 Offset 7505. 
+[2014/03/18@13:44:49.772+2300] P-5308       T-4128  I ABL      : (334)   Single-user session end. 
+
+                Thu May 15 20:24:01 2014
+[2014/05/15@20:24:01.533+2300] P-1684       T-4832  I ABL      : (451)   Single-user session begin for Az on CON:. 
+[2014/05/15@20:24:01.830+2300] P-1684       T-4832  I ABL      : (15321) Before Image Log Initialization at block 7  offset 7505. 
+[2014/05/15@20:24:01.939+2300] P-1684       T-4832  I ABL      : (12699) Database bak Options:  
+[2014/05/15@20:24:16.116+2300] P-1684       T-4832  I ABL      : (15109) At Database close the number of live transactions is 0. 
+[2014/05/15@20:24:16.116+2300] P-1684       T-4832  I ABL      : (15743) Before Image Log Completion at Block 7 Offset 7887. 
+[2014/05/15@20:24:16.116+2300] P-1684       T-4832  I ABL      : (334)   Single-user session end. 
+
+                Mon Jun 09 20:53:54 2014
+[2014/06/09@20:53:54.893-0700] P-5860       T-8040  I ABL      : (451)   Single-user session begin for AZ on CON:. 
+[2014/06/09@20:53:54.980-0700] P-5860       T-8040  I ABL      : (15321) Before Image Log Initialization at block 7  offset 7887. 
+[2014/06/09@20:53:55.119-0700] P-5860       T-8040  I ABL      : (12699) Database bak Options:  
+[2014/06/09@20:54:10.628-0700] P-5860       T-8040  I ABL      : (15109) At Database close the number of live transactions is 0. 
+[2014/06/09@20:54:10.629-0700] P-5860       T-8040  I ABL      : (15743) Before Image Log Completion at Block 8 Offset 101. 
+[2014/06/09@20:54:10.633-0700] P-5860       T-8040  I ABL      : (334)   Single-user session end. 
