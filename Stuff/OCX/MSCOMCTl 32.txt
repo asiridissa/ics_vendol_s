@@ -1,0 +1,2 @@
+regsvr32 /u C:\Windows\System32\MSCOMCTl.OCX
+regsvr32 C:\Windows\System32\MSCOMCTl.OCX
