@@ -1,7 +1,4 @@
 No|Product|Weight|Van C|Van P|Stock C|Stock P|Total P|Buying Price|Amount|Selling Price|Amount|
-** FIND FIRST/LAST failed for table lorryStock. (565)
-** FIND FIRST/LAST failed for table lorryStock. (565)
-** FIND FIRST/LAST failed for table lorryStock. (565)
-** FIND FIRST/LAST failed for table lorryStock. (565)
-** FIND FIRST/LAST failed for table lorryStock. (565)
-|Total||0|0|0|0|0||0||0|
+1|Test Item - 01/08/2015|.1|0|0|10|0|100|92|9200|100|10000|
+2|Test 2 - 01/08/2015|1|0|0|5|0|20|460|9200|500|10000|
+|Total||0|0|15|0|120||18400||20000|

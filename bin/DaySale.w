@@ -259,7 +259,7 @@ DEFINE VARIABLE filRecipt# AS INTEGER FORMAT ">,>>>,>>>,>>>9":U INITIAL 0
      SIZE 15 BY .85
      BGCOLOR 7 FGCOLOR 11  NO-UNDO.
 
-DEFINE VARIABLE filStockP AS INTEGER FORMAT ">>>9":U INITIAL 0 
+DEFINE VARIABLE filStockP AS INTEGER FORMAT ">>>>>>9":U INITIAL 0 
      LABEL "Stock P" 
      VIEW-AS FILL-IN 
      SIZE 9 BY .85
@@ -377,29 +377,29 @@ DEFINE FRAME DEFAULT-FRAME
      btnDeleteTable AT ROW 6.15 COL 30.72 WIDGET-ID 220 NO-TAB-STOP 
      brw AT ROW 1 COL 46.14 WIDGET-ID 300
      btnModifyItem AT ROW 9.5 COL 2.14 WIDGET-ID 208
-     filLDC AT ROW 20.46 COL 11.43 COLON-ALIGNED WIDGET-ID 180
-     filLDP AT ROW 20.46 COL 28 COLON-ALIGNED WIDGET-ID 168
-     filULC AT ROW 22.92 COL 11.43 COLON-ALIGNED WIDGET-ID 184
-     filULP AT ROW 22.92 COL 28 COLON-ALIGNED WIDGET-ID 182
+     filLDC AT ROW 20.04 COL 11.29 COLON-ALIGNED WIDGET-ID 180
+     filLDP AT ROW 20.04 COL 28 COLON-ALIGNED WIDGET-ID 168
+     filULC AT ROW 21.92 COL 11.29 COLON-ALIGNED WIDGET-ID 184
+     filULP AT ROW 21.92 COL 28 COLON-ALIGNED WIDGET-ID 182
      btnSave AT ROW 9.5 COL 16.43 WIDGET-ID 212
      btnCancel AT ROW 9.5 COL 30.72 WIDGET-ID 214
      filLastWorkingDay AT ROW 4.38 COL 25.86 COLON-ALIGNED WIDGET-ID 206 NO-TAB-STOP 
      cmbName AT ROW 13 COL 7.57 COLON-ALIGNED WIDGET-ID 54 NO-TAB-STOP 
      filStockP AT ROW 14.42 COL 32.43 COLON-ALIGNED WIDGET-ID 158 NO-TAB-STOP 
      filLorriesP AT ROW 15.65 COL 32.43 COLON-ALIGNED WIDGET-ID 176 NO-TAB-STOP 
-     filBSC AT ROW 19.31 COL 11.43 COLON-ALIGNED WIDGET-ID 166 NO-TAB-STOP 
+     filBSC AT ROW 19.12 COL 11.29 COLON-ALIGNED WIDGET-ID 166 NO-TAB-STOP 
      btnSaveTable AT ROW 7.42 COL 2.14 WIDGET-ID 224 NO-TAB-STOP 
-     filBSP AT ROW 19.31 COL 28 COLON-ALIGNED WIDGET-ID 164 NO-TAB-STOP 
+     filBSP AT ROW 19.12 COL 28 COLON-ALIGNED WIDGET-ID 164 NO-TAB-STOP 
      filTolRDP AT ROW 25.65 COL 7.57 COLON-ALIGNED WIDGET-ID 228 NO-TAB-STOP 
      btnCancelTable AT ROW 7.42 COL 16.43 WIDGET-ID 222 NO-TAB-STOP 
      filBillP AT ROW 25.65 COL 21.57 COLON-ALIGNED WIDGET-ID 200 NO-TAB-STOP 
      filRecipt# AT ROW 11.81 COL 7.57 COLON-ALIGNED WIDGET-ID 4 NO-TAB-STOP 
-     filTolLDC AT ROW 21.69 COL 11.43 COLON-ALIGNED WIDGET-ID 194 NO-TAB-STOP 
-     filTolLDP AT ROW 21.69 COL 28 COLON-ALIGNED WIDGET-ID 196 NO-TAB-STOP 
+     filTolLDC AT ROW 20.96 COL 11.29 COLON-ALIGNED WIDGET-ID 194 NO-TAB-STOP 
+     filTolLDP AT ROW 20.96 COL 28 COLON-ALIGNED WIDGET-ID 196 NO-TAB-STOP 
      filKg AT ROW 14.42 COL 7.57 COLON-ALIGNED WIDGET-ID 8 NO-TAB-STOP 
      filUnitPrice AT ROW 15.65 COL 7.57 COLON-ALIGNED WIDGET-ID 58 NO-TAB-STOP 
      filExcessShortP AT ROW 25.65 COL 36.57 COLON-ALIGNED WIDGET-ID 204 NO-TAB-STOP 
-     filRDC AT ROW 24.15 COL 11.43 COLON-ALIGNED WIDGET-ID 188 NO-TAB-STOP 
+     filRDC AT ROW 24.15 COL 11.29 COLON-ALIGNED WIDGET-ID 188 NO-TAB-STOP 
      filRDP AT ROW 24.15 COL 28 COLON-ALIGNED WIDGET-ID 186 NO-TAB-STOP 
      filCasePrice AT ROW 16.88 COL 7.57 COLON-ALIGNED WIDGET-ID 64 NO-TAB-STOP 
      filPerCase AT ROW 16.88 COL 32.57 COLON-ALIGNED WIDGET-ID 162 NO-TAB-STOP 
@@ -409,7 +409,7 @@ DEFINE FRAME DEFAULT-FRAME
      filGRST AT ROW 18.23 COL 11.29 COLON-ALIGNED WIDGET-ID 256
      "Date:" VIEW-AS TEXT
           SIZE 4.57 BY .58 AT ROW 2.85 COL 4.86 WIDGET-ID 234
-     RECT-1 AT ROW 11.23 COL 1.43 WIDGET-ID 238
+     RECT-1 AT ROW 11.19 COL 1.43 WIDGET-ID 238
      RECT-2 AT ROW 9.08 COL 1.43 WIDGET-ID 240
      RECT-3 AT ROW 5.85 COL 1.43 WIDGET-ID 242
      RECT-4 AT ROW 1.12 COL 1.43 WIDGET-ID 244
@@ -438,7 +438,7 @@ IF SESSION:DISPLAY-TYPE = "GUI":U THEN
          HIDDEN             = YES
          TITLE              = "Loading Unloading"
          COLUMN             = 1.72
-         ROW                = 1.04
+         ROW                = 1.27
          HEIGHT             = 26.46
          WIDTH              = 144
          MAX-HEIGHT         = 26.46
@@ -598,15 +598,8 @@ END.
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL C-Win C-Win
 ON WINDOW-CLOSE OF C-Win /* Loading Unloading */
 DO:
-  MESSAGE "Confrm to close the window?" VIEW-AS ALERT-BOX INFO BUTTONS YES-NO UPDATE yn AS LOGICAL.
-  IF yn = YES THEN
-    DO:
-/*       session_Window = session_Window - 1. */
       APPLY "CLOSE":U TO THIS-PROCEDURE.
       RETURN NO-APPLY.
-    END.
-  ELSE
-    RETURN NO-APPLY.
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -732,6 +725,7 @@ DO:
     DO:
       tim = TIME.
 
+      btnRfresh:LABEL = "Working...".
       RUN populateTableFast.
 
       APPLY "VALUE-CHANGED":U TO brw.
@@ -742,6 +736,7 @@ DO:
       ENABLE brw btnCancelTable btnSaveTable btnModifyItem WITH FRAME {&FRAME-NAME}.
       DISABLE cmbVeh btnAddTable btnDeleteTable btnModifyTable WITH FRAME {&FRAME-NAME}.
 
+      btnRfresh:LABEL = "Add Table".
       MESSAGE "Query compleated in " + STRING(TIME - tim,"HH:MM:SS") + "." VIEW-AS ALERT-BOX INFO BUTTONS OK.
     END.
 END.
@@ -780,20 +775,22 @@ DO:
     
     IF yn THEN
     DO:
+
+        btnRfresh:LABEL = "Working...".
         RUN saveTable.
     
+        DEFINE VARIABLE stockSum AS INTEGER     NO-UNDO.
+        DEFINE VARIABLE loadSum AS INTEGER     NO-UNDO.
+
         FOR EACH tt-ldunld.
             FIND FIRST itms WHERE itms.itmID = tt-ldunld.itmID EXCLUSIVE-LOCK NO-ERROR.
-                IF (itms.stockP - tt-ldunld.LDP) < 0 THEN
-                DO:
-                    itms.stockP = ( itms.unitsPerCase - ((tt-ldunld.LDP - itms.stockP ) MODULO itms.unitsPerCase ) ) + tt-ldunld.GRRD  .
-                    itms.stockC = itms.stockC - (TRUNCATE((tt-ldunld.LDP - itms.stockP ) / itms.unitsPerCase , 0) + 1).
-                END.
-                ELSE
-                DO:
-                    itms.stockP = ( itms.stockP + tt-ldunld.GRRD ) - tt-ldunld.LDP.
-                    itms.stockC = itms.stockC + tt-ldunld.GRRD.
-                END.
+
+            stockSum = (itms.stockP + (itms.stockC * itms.unitsPerCase) + tt-ldunld.GRST ).
+            loadSum  = (tt-ldunld.LDP +(tt-ldunld.LDC * itms.unitsPerCase)).
+
+            itms.stockP = (stockSum - loadSum) MODULO itms.unitsPerCase.
+            itms.stockC = (stockSum - loadSum) / itms.unitsPerCase.
+
             RELEASE itms.
         END.
     
@@ -815,6 +812,8 @@ DO:
                 VIEW-AS ALERT-BOX INFO BUTTONS OK.
         END.
         DISABLE btnSaveTable WITH FRAM {&FRAME-NAME}.
+
+        btnRfresh:LABEL = "BS Save".
     END.
             
 END.
@@ -944,7 +943,10 @@ DO:
     
     IF yn = YES THEN
     DO:
+
+        btnRfresh:LABEL = "Working...".
         RUN printTextFast.
+        btnRfresh:LABEL = "Print Table".
     END.
 END.
 
@@ -1024,6 +1026,7 @@ DO:
             RELEASE itms.
         END.
     
+        
         OPEN QUERY brw FOR EACH tt-ldunld BY tt-ldunld.SortID.
 
     APPLY "VALUE-CHANGED":U TO brw IN FRAME DEFAULT-FRAME.
@@ -1074,8 +1077,8 @@ DO:
     ELSE
     DO:
         tim = TIME.
-/*         RUN refreshTable. */
-        RUN refreshTableFast.
+        btnRfresh:LABEL = "Working...".
+        RUN refreshTable1.
         
         APPLY "VALUE-CHANGED":U TO brw.
         APPLY "ENTRY":U TO brw IN FRAME DEFAULT-FRAME.
@@ -1083,6 +1086,7 @@ DO:
         isRefresh = TRUE.
         
         ENABLE btnSaveTable WITH FRAME {&FRAME-NAME}.
+        btnRfresh:LABEL = "Refresh".
         MESSAGE "Query compleated in " + STRING(TIME - tim,"HH:MM:SS") + "." VIEW-AS ALERT-BOX INFO BUTTONS OK.
     END.
 
@@ -1109,9 +1113,6 @@ DO:
         RETURN.
     END.
 
-    MESSAGE "Conferm to save the record?" VIEW-AS ALERT-BOX QUESTION BUTTONS YES-NO UPDATE yn AS LOGICAL.
-    IF yn = YES THEN
-    DO:
             FIND FIRST tt-ldunld WHERE tt-ldunld.ID = filRecipt# EXCLUSIVE-LOCK.
             tt-ldunld.BSC     = filBSC.
             tt-ldunld.BSP     = filBSP.
@@ -1145,7 +1146,6 @@ DO:
     
       DISABLE btnCancel btnSave filLDC filLDP filULC filULP WITH FRAME {&FRAME-NAME}.
       ENABLE btnDeleteTable btnBSSave brw btnSaveTable btnCancelTable btnModifyItem WITH FRAME {&FRAME-NAME}.
-  END.
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -1162,7 +1162,9 @@ DO:
 
     IF yn THEN
     DO:
+        btnRfresh:LABEL = "Working...".
         RUN saveTable.
+        btnRfresh:LABEL = "Save Table".
     END.
 END.
 
@@ -1657,6 +1659,7 @@ MAIN-BLOCK:
 DO ON ERROR   UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK
    ON END-KEY UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK:
   RUN enable_UI.
+
   
   DEFINE SHARED VARIABLE session_Path AS CHAR.
   DEFINE SHARED VARIABLE session_icon AS CHAR.
@@ -1664,13 +1667,15 @@ DO ON ERROR   UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK
   {&WINDOW-NAME}:LOAD-ICON(session_icon).
 
   calendr = chCtrlFrame:DTPicker.
+  calendr:VALUE = date(DATETIME(TODAY - 1)) NO-ERROR.
   calendr:ENABLED = TRUE.
-  calendr:VALUE = TODAY - 1.
 
+  {&WINDOW-NAME}:TITLE = "Working...".
   RUN vehLoader.
   RUN itemLoader.
   RUN LastWrkDate.
   RUN ttBind.
+  {&WINDOW-NAME}:TITLE = session_Path.
   
   IF NOT THIS-PROCEDURE:PERSISTENT THEN
     WAIT-FOR CLOSE OF THIS-PROCEDURE.
@@ -1855,10 +1860,12 @@ END PROCEDURE.
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE LastWrkDate C-Win 
 PROCEDURE LastWrkDate :
 FIND FIRST paramtrs WHERE paramtrs.NAME = "lastWorkingDay".
-    filLastWorkingDay = DATE(paramtrs.val).
+    IF AVAILABLE paramtrs THEN do:
+        filLastWorkingDay = date(DATETIME(paramtrs.val)).
+        DISPLAY filLastWorkingDay WITH FRAME {&FRAME-NAME}.
+    END.
 RELEASE paramtrs.
 
-DISPLAY filLastWorkingDay WITH FRAME {&FRAME-NAME}.
 
 END PROCEDURE.
 
@@ -2193,8 +2200,6 @@ DEFINE VARIABLE tempDate AS DATE        NO-UNDO.
 DEFINE VARIABLE tempVeh AS CHARACTER   NO-UNDO.
 DEFINE VARIABLE tempUser AS CHARACTER   NO-UNDO.
 DEFINE VARIABLE tempNo AS INT   NO-UNDO.
-DEFINE VARIABLE tempVal AS DECIMAL   NO-UNDO INIT 0.
-DEFINE VARIABLE tempTon AS DECIMAL   NO-UNDO INIT 0.
 
 tempDate = calendr:VALUE.
 FIND FIRST vehical WHERE vehical.ID = cmbVeh.
@@ -2202,61 +2207,62 @@ FIND FIRST vehical WHERE vehical.ID = cmbVeh.
 tempVeh  = STRING(vehical.veh#).
 tempUser = session_User.
 
-OUTPUT TO VALUE("E:\ICS\bin\print\DaySale.txt").
-          PUT UNFORMAT " Date : " + STRING(tempDate) + "    Vehical : " + tempVeh + "  " + descrip + "    By User : " + tempUser SKIP. 
-          PUT UNFORMAT "No|Item|Weight|Price|Units|BSC|BSP|LDC|LDP|ULC|ULP|RDC|RDP|BilP|Excs|Shrt" SKIP. 
+    OUTPUT TO VALUE("E:\ICS\bin\print\DaySale.txt").
+    PUT UNFORMAT " Date : " + STRING(tempDate) + "    Vehical : " + tempVeh + "  " + descrip + "    By User : " + tempUser SKIP. 
+    PUT UNFORMAT "No|Item|Weight|Price|UPC|BSC|BSP|RDR|LDC|LDP|ULC|ULP|RDC|RDP|BilP|Excs|Shrt" SKIP. 
+    
+    FOR EACH itms BY itms.SortID.
+        FIND FIRST tt-ldunld WHERE tt-ldunld.itmID = itms.itmID NO-LOCK NO-ERROR.
+            IF AVAILABLE tt-ldunld AND (tt-ldunld.BSC   +
+            tt-ldunld.BSP   +
+            tt-ldunld.GRRD   +
+            tt-ldunld.LDC   +
+            tt-ldunld.LDP   +
+            tt-ldunld.ULC   +
+            tt-ldunld.ULP   +
+            tt-ldunld.RDC   +
+            tt-ldunld.RDP   +
+            tt-ldunld.BilP
+            ) > 0 THEN
+            DO:
+                tempNo = tempNo + 1.
+                PUT UNFORMAT STRING( tempNo) + "|".                   
+                PUT UNFORMAT string( tt-ldunld.itmName) + "|"  .            
+                PUT UNFORMAT string( tt-ldunld.Weight,">>9.999") + "|" .    
+                PUT UNFORMAT string( tt-ldunld.PriceP,">,>>9.99") + "|"   . 
+                PUT UNFORMAT string( tt-ldunld.PerCase,">>9") + "|"   .           
+                PUT UNFORMAT string( tt-ldunld.BSC   ) + "|"   .            
+                PUT UNFORMAT string( tt-ldunld.BSP   ) + "|"   .            
+                PUT UNFORMAT string( tt-ldunld.GRRD  ) + "|"   .            
+                PUT UNFORMAT string( tt-ldunld.LDC   ) + "|"   .            
+                PUT UNFORMAT string( tt-ldunld.LDP   ) + "|"   .            
+                PUT UNFORMAT string( tt-ldunld.ULC   ) + "|"   .            
+                PUT UNFORMAT string( tt-ldunld.ULP   ) + "|"   .            
+                PUT UNFORMAT string( tt-ldunld.RDC   ) + "|"   .            
+                PUT UNFORMAT string( tt-ldunld.RDP   ) + "|"   .            
+                PUT UNFORMAT string( tt-ldunld.BilP  ) + "|"   .               
+                PUT UNFORMAT string( tt-ldunld.Excess) + "|"   .            
+                PUT UNFORMAT string( tt-ldunld.Short )   SKIP.   
+                ACCUMULATE (tt-ldunld.BilP * tt-ldunld.PriceP) (TOTAL).
+                ACCUMULATE (tt-ldunld.BilP * tt-ldunld.Weight) (TOTAL).
+            END.
+        RELEASE tt-ldunld.
 
-          FOR EACH itms BY itms.SortID.
-          FIND FIRST tt-ldunld WHERE tt-ldunld.itmID = itms.itmID NO-LOCK NO-ERROR.
-              IF AVAILABLE tt-ldunld AND (tt-ldunld.BSC   +
-                  tt-ldunld.BSP   +
-                  tt-ldunld.LDC   +
-                  tt-ldunld.LDP   +
-                  tt-ldunld.ULC   +
-                  tt-ldunld.ULP   +
-                  tt-ldunld.RDC   +
-                  tt-ldunld.RDP   +
-                  tt-ldunld.BilP
-                  ) > 0 THEN
-              DO:
-                  tempNo = tempNo + 1.
-                  PUT UNFORMAT STRING( tempNo) + "|".                   
-                  PUT UNFORMAT string( tt-ldunld.itmName) + "|"  .            
-                  PUT UNFORMAT string( tt-ldunld.Weight,">>9.999") + "|" .    
-                  PUT UNFORMAT string( tt-ldunld.PriceP,">,>>9.99") + "|"   . 
-                  PUT UNFORMAT string( tt-ldunld.PerCase,">>9") + "|"   .           
-                  PUT UNFORMAT string( tt-ldunld.BSC   ) + "|"   .            
-                  PUT UNFORMAT string( tt-ldunld.BSP   ) + "|"   .            
-                  PUT UNFORMAT string( tt-ldunld.LDC   ) + "|"   .            
-                  PUT UNFORMAT string( tt-ldunld.LDP   ) + "|"   .            
-                  PUT UNFORMAT string( tt-ldunld.ULC   ) + "|"   .            
-                  PUT UNFORMAT string( tt-ldunld.ULP   ) + "|"   .            
-                  PUT UNFORMAT string( tt-ldunld.RDC   ) + "|"   .            
-                  PUT UNFORMAT string( tt-ldunld.RDP   ) + "|"   .            
-                  PUT UNFORMAT string( tt-ldunld.BilP  ) + "|"   .               
-                  PUT UNFORMAT string( tt-ldunld.Excess) + "|"   .            
-                  PUT UNFORMAT string( tt-ldunld.Short )   SKIP.   
-                  tempVal = tempVal + (tt-ldunld.BilP * tt-ldunld.PriceP).
-                  tempTon = tempTon + (tt-ldunld.BilP * tt-ldunld.Weight).
-              END.
-        END.
+        ACCUMULATE ((itms.stockP + (itms.stockC * itms.unitsPerCase)) * itms.unitWeightKG) (TOTAL).
+        ACCUMULATE ((itms.stockP + (itms.stockC * itms.unitsPerCase)) * itms.unitPriceS)   (TOTAL).
 
-    DEFINE VARIABLE tonnage AS DECIMAL     NO-UNDO.
-    DEFINE VARIABLE tolVal AS DECIMAL     NO-UNDO.
-    FOR EACH tt-itms.
-        tonnage = tonnage + ((tt-itms.stockP + (tt-itms.stockC * tt-itms.unitsPerCase)) * tt-itms.unitWeightKG).
-        tolVal  = tolVal + ((tt-itms.stockP + (tt-itms.stockC * tt-itms.unitsPerCase)) * tt-itms.unitPriceS).
     END.
-      PUT UNFORMAT " " SKIP.
-      PUT UNFORMAT "|Sales Value (Rs.)   : " + STRING( tempVal,">>>,>>>,>>>,>>9.99").
-      PUT UNFORMAT "|Total Value (Rs.)   : " + STRING( tolVal,">>>,>>>,>>>,>>9.99") SKIP.
-      PUT UNFORMAT "|Sales Tonnage (kg)  : " + STRING( tempTon,">>>,>>>,>>>,>>9.999").
-      PUT UNFORMAT "|Total Tonnage (kg)  : " + STRING( tonnage,">>>,>>>,>>>,>>9.999") SKIP.
-
-  OUTPUT CLOSE.
-
-  DOS SILENT START VALUE("E:\ICS\bin\print\DaySale.bat").
-  DOS SILENT START excel VALUE("E:\ICS\bin\print\DaySale.xlsm").
+    
+    PUT UNFORMAT " " SKIP.
+    PUT UNFORMAT "|Sales Value   : " + STRING( ACCUM total (tt-ldunld.BilP * tt-ldunld.PriceP) ,">>>,>>>,>>>,>>9.99 /=").
+    PUT UNFORMAT "|Sales Tonnage : " + STRING( ACCUM total (tt-ldunld.BilP * tt-ldunld.Weight),">>>,>>>,>>>,>>9.999 kg") SKIP.
+    PUT UNFORMAT "|Stock Value   : " + STRING((ACCUM total ((itms.stockP + (itms.stockC * itms.unitsPerCase)) * itms.unitPriceS)),">>>,>>>,>>>,>>9.99 /=") .
+    PUT UNFORMAT "|Stock Tonnage : " + STRING((ACCUM total ((itms.stockP + (itms.stockC * itms.unitsPerCase)) * itms.unitWeightKG)),">>>,>>>,>>>,>>9.999 kg") SKIP.
+    
+    OUTPUT CLOSE.
+    
+    DOS SILENT START VALUE("E:\ICS\bin\print\DaySale.bat").
+    DOS SILENT START excel VALUE("E:\ICS\bin\print\DaySale.xlsm").
 
 END PROCEDURE.
 
@@ -2382,24 +2388,164 @@ END PROCEDURE.
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE refreshTable1 C-Win 
+PROCEDURE refreshTable1 :
+DEFINE VARIABLE cnt AS INTEGER     NO-UNDO.
+DEFINE VARIABLE cntRDP AS INTEGER     NO-UNDO.
+DEFINE VARIABLE cntGRRD AS INTEGER     NO-UNDO.
+DEFINE VARIABLE cntGRST AS INTEGER     NO-UNDO.
+DEFINE VARIABLE tempBSC AS INTEGER     NO-UNDO.
+DEFINE VARIABLE tempBSP AS INTEGER     NO-UNDO.
+DEFINE VARIABLE Bil_Date AS DATE     NO-UNDO.
+DEFINE VARIABLE tempDate AS DATE     NO-UNDO INIT 01/01/2013.
+DEFINE VARIABLE lastBSDate AS DATE     NO-UNDO.
+
+    Bil_Date = calendr:VALUE.
+        
+    FOR EACH tt-lorryStock WHERE tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate < Bil_Date.
+        ACCUMULATE tt-lorryStock.crDate (MAX).
+    END.
+
+    lastBSDate = ACCUM MAX tt-lorryStock.crDate.
+
+    RUN ttBind.
+
+    FIND FIRST paramtrs WHERE paramtrs.NAME = "lastLorryStockID".
+    IF AVAILABLE paramtrs THEN
+    DO:
+        tempIDtt-ldunld = INT(paramtrs.val).
+    
+        FOR EACH tt-itms BY tt-itms.SortID.
+            cnt = 0.   
+            cntGRRD = 0.
+            cntGRST = 0.
+    
+            FOR EACH tt-bills WHERE bilDate = Bil_Date AND tt-bills.vehNo = cmbVeh.
+                FOR EACH tt-recipts WHERE tt-recipts.item# = tt-itms.itmID AND tt-recipts.bill# = tt-bills.bill#.
+                    IF AVAILABLE tt-recipts THEN
+                    DO:
+                        cnt = cnt + tt-recipts.pieses + (tt-recipts.cases * tt-itms.unitsPerCase).
+                        cntGRRD = cntGRRD + tt-recipts.GRRD.
+                        cntGRST = cntGRST + tt-recipts.GRST.
+                    END.
+                END.
+            END.
+    
+            FIND FIRST tt-ldunld WHERE tt-ldunld.itmID = tt-itms.itmID.
+            IF AVAILABLE tt-ldunld THEN
+            DO:
+                FIND FIRST tt-lorryStock WHERE tt-lorryStock.itmID = tt-ldunld.itmID AND tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate = lastBSDate NO-ERROR. 
+                    IF AVAILABLE tt-lorryStock THEN
+                    DO:
+                        tt-ldunld.BSC     = tt-lorryStock.ULC.
+                        tt-ldunld.BSP     = tt-lorryStock.ULP.
+                    END.
+                    ELSE
+                    DO:
+                        tt-ldunld.BSC     = 0.
+                        tt-ldunld.BSP     = 0.
+                    END.    
+                RELEASE tt-lorryStock.
+
+                tt-ldunld.Excess = 0.
+                tt-ldunld.SHORT  = 0.
+    
+                tt-ldunld.GRRD    = cntGRRD.
+                tt-ldunld.GRST    = cntGRST.
+    
+                tt-ldunld.BilP    = cnt.
+
+                cntRDP = cntGRRD + ((tt-ldunld.BSP + (tt-ldunld.BSC * tt-ldunld.PerCase)) + (tt-ldunld.LDP + (tt-ldunld.LDC * tt-ldunld.PerCase)))
+                     - (tt-ldunld.ULP + (tt-ldunld.ULC * tt-ldunld.PerCase)).
+
+                tt-ldunld.RDP = cntRDP MODULO tt-ldunld.PerCase.
+                tt-ldunld.RDC = ROUND((cntRDP - tt-ldunld.RDP) / tt-ldunld.PerCase,0).
+    
+                IF (tt-ldunld.RDP + (tt-ldunld.RDC * tt-ldunld.PerCase)) < cnt THEN
+                    tt-ldunld.Excess  = cnt - (tt-ldunld.RDP + (tt-ldunld.RDC * tt-ldunld.PerCase)).
+                ELSE IF (tt-ldunld.RDP + (tt-ldunld.RDC * tt-ldunld.PerCase)) > cnt THEN
+                    tt-ldunld.Short   = (tt-ldunld.RDP + (tt-ldunld.RDC * tt-ldunld.PerCase)) - cnt.
+
+                tt-ldunld.Amount  = tt-ldunld.PerCase * cnt.
+    
+/*                 filLorriesP  = cntGRRD + tt-ldunld.BSP + (tt-ldunld.BSC * tt-ldunld.PerCase). */
+
+            END.
+            ELSE
+            DO:
+                CREATE tt-ldunld.
+                tt-ldunld.ID      = tempIDtt-ldunld + 1.
+                tt-ldunld.vehNo   = cmbVeh.
+                tt-ldunld.itmID   = tt-itms.itmID.
+                tt-ldunld.itmName = tt-itms.itmName.
+                tt-ldunld.Weight  = tt-itms.unitWeightKG.
+                tt-ldunld.PriceP  = tt-itms.unitPriceS.
+                tt-ldunld.PerCase = tt-itms.unitsPerCase.
+                tt-ldunld.SortID  = tt-itms.SortID.
+        
+                FIND FIRST tt-lorryStock WHERE tt-lorryStock.itmID = tt-itms.itmID AND tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate = lastBSDate NO-LOCK NO-ERROR.
+                    IF AVAILABLE tt-lorryStock THEN
+                    DO:
+                        tt-ldunld.BSC     = tt-lorryStock.ULC.
+                        tt-ldunld.BSP     = tt-lorryStock.ULP.
+                    END.
+                    ELSE
+                    DO:
+                        tt-ldunld.BSC     = 0.
+                        tt-ldunld.BSP     = 0.
+                    END.
+                RELEASE tt-lorryStock.
+    
+                tt-ldunld.GRRD    = cntGRRD.
+                tt-ldunld.GRST    = cntGRST.
+        
+                tt-ldunld.LDC     = 0.
+                tt-ldunld.LDP     = 0.
+                tt-ldunld.ULC     = tt-ldunld.BSC.
+                tt-ldunld.ULP     = tt-ldunld.BSP + cntGRRD.
+                tt-ldunld.RDC     = 0.
+                tt-ldunld.RDP     = 0.
+                tt-ldunld.BilP    = cnt.
+                tt-ldunld.Excess  = cnt.
+                tt-ldunld.Short   = 0.
+                tt-ldunld.Amount  = tt-itms.unitPriceS * cnt.
+            
+                tempIDtt-ldunld = tempIDtt-ldunld + 1.
+        
+                filLorriesP  = cntGRRD + tt-ldunld.BSP + (tt-ldunld.BSC * tt-itms.unitsPerCase).
+            END.
+        END.
+    END.
+    
+    OPEN QUERY brw FOR EACH tt-ldunld by tt-ldunld.SortID.
+    APPLY "VALUE-CHANGED":U TO brw IN FRAME DEFAULT-FRAME.
+    
+    DISPLAY filLorriesP WITH FRAME DEFAULT-FRAME.
+
+END PROCEDURE.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE refreshTableFast C-Win 
 PROCEDURE refreshTableFast :
 DEFINE VARIABLE cnt         AS INTEGER NO-UNDO.
-DEFINE VARIABLE cntGRRD AS INTEGER     NO-UNDO.
-DEFINE VARIABLE cntGRST AS INTEGER     NO-UNDO.
-DEFINE VARIABLE tempBSC     AS INTEGER NO-UNDO.
-DEFINE VARIABLE tempBSP     AS INTEGER NO-UNDO.
+DEFINE VARIABLE cntGRRD     AS INT     NO-UNDO.
+DEFINE VARIABLE cntGRST     AS INT     NO-UNDO.
+DEFINE VARIABLE tempBSC     AS INT NO-UNDO.
+DEFINE VARIABLE tempBSP     AS INT NO-UNDO.
 DEFINE VARIABLE Bil_Date    AS DATE    NO-UNDO.
 DEFINE VARIABLE tempDate    AS DATE    NO-UNDO INIT 01/01/2013.
 DEFINE VARIABLE lastBSDate  AS DATE    NO-UNDO.
 
 Bil_Date = calendr:VALUE.
             
-        FOR EACH tt-lorryStock WHERE tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate < Bil_Date.
-            ACCUMULATE tt-lorryStock.crDate (MAX).
-        END.
-
-        lastBSDate = ACCUM MAX tt-lorryStock.crDate.
+/*         FOR EACH tt-lorryStock WHERE tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate < Bil_Date. */
+/*             ACCUMULATE tt-lorryStock.crDate (MAX).                                                     */
+/*         END.                                                                                           */
+/*                                                                                                        */
+/*         lastBSDate = ACCUM MAX tt-lorryStock.crDate.                                                   */
+        SELECT MAX(crDate) INTO lastBSDate FROM lorryStock WHERE crDate < Bil_Date AND VehID = cmbVeh.
 
         FOR EACH tt-ldunld.
 
@@ -2408,16 +2554,46 @@ Bil_Date = calendr:VALUE.
             cntGRST = 0.
 
             FOR EACH tt-bills WHERE tt-bills.bilDate = Bil_Date AND tt-bills.vehNo = cmbVeh.
-                FOR EACH tt-recipts WHERE tt-recipts.item# = tt-ldunld.itmID AND tt-recipts.bill# = tt-bills.bill#.
-                    IF AVAILABLE tt-recipts THEN
-                    DO:
-                        cnt = cnt + tt-recipts.pieses + (tt-recipts.cases * tt-ldunld.PerCase).
-                        cntGRRD = cntGRRD + tt-recipts.GRRD.
-                        cntGRST = cntGRST + tt-recipts.GRST.
-                    END.
+                FOR EACH recipts WHERE recipts.item# = tt-ldunld.itmID AND recipts.bill# = tt-bills.bill#.
+                    ACCUMULATE recipts.GRRD (SUM).
+                    ACCUMULATE recipts.GRST (SUM).
+                    ACCUMULATE recipts.pieses + (recipts.cases * tt-ldunld.PerCase) (SUM).
                 END.
+                cntGRRD  = ACCUM SUM recipts.GRRD.
+                cntGRST  = ACCUM SUM recipts.GRST.
+                cnt = ACCUM SUM recipts.pieses + (recipts.cases * tt-ldunld.PerCase).
+
+/*                 DEFINE VARIABLE a AS INTEGER     NO-UNDO. */
+/*                 a = ETIME(YES).                           */
+/*                 FOR EACH tt-recipts WHERE tt-recipts.item# = tt-ldunld.itmID AND tt-recipts.bill# = tt-bills.bill#. */
+/*                     IF AVAILABLE tt-recipts THEN                                                                    */
+/*                     DO:                                                                                             */
+/*                         cnt = cnt + tt-recipts.pieses + (tt-recipts.cases * tt-ldunld.PerCase).                     */
+/*                         MESSAGE cntGRRD VIEW-AS ALERT-BOX INFO BUTTONS OK.                                          */
+/*                         cntGRRD = cntGRRD + tt-recipts.GRRD.                                                        */
+/*                         MESSAGE cntGRRD VIEW-AS ALERT-BOX INFO BUTTONS OK.                                          */
+/*                         cntGRST = cntGRST + tt-recipts.GRST.                                                        */
+/*                     END.                                                                                            */
+/*                 END.                                                                                                */
+/*                 MESSAGE ETIME VIEW-AS ALERT-BOX INFO BUTTONS OK. */
+
+/*                 a = ETIME(YES). */
+/*                 FOR EACH recipts WHERE recipts.item# = tt-ldunld.itmID AND recipts.bill# = tt-bills.bill#. */
+/*                     IF AVAILABLE recipts THEN                                                              */
+/*                     DO:                                                                                    */
+/*                         cnt = cnt + recipts.pieses + (recipts.cases * tt-ldunld.PerCase).                  */
+/* /*                         cntGRRD = cntGRRD + recipts.GRRD. */                                            */
+/* /*                         cntGRST = cntGRST + recipts.GRST. */                                            */
+/*                     END.                                                                                   */
+/*                 END.                                                                                       */
+/*                 MESSAGE ETIME VIEW-AS ALERT-BOX INFO BUTTONS OK. */
+
+/*                 a = ETIME(YES). */
+/*                 SELECT SUM(recipts.pieses + (recipts.cases * tt-ldunld.PerCase)), SUM(recipts.GRRD), SUM(recipts.GRST) INTO cnt, cntGRRD, cntGRST FROM recipts */
+/*                     WHERE recipts.item# = tt-ldunld.itmID AND recipts.bill# = tt-bills.bill# .                                                                 */
+/*                 MESSAGE ETIME VIEW-AS ALERT-BOX INFO BUTTONS OK. */
+
             END.
-            
             
             FIND FIRST tt-lorryStock WHERE tt-lorryStock.itmID = tt-ldunld.itmID AND tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate = lastBSDate NO-ERROR. 
                 IF AVAILABLE tt-lorryStock THEN
@@ -2425,7 +2601,7 @@ Bil_Date = calendr:VALUE.
                     tt-ldunld.BSC     = tt-lorryStock.ULC.
                     tt-ldunld.BSP     = tt-lorryStock.ULP.
                     tt-ldunld.RDC     = (tt-lorryStock.ULC + tt-ldunld.LDC) - tt-ldunld.ULC.
-                    tt-ldunld.RDP     = (tt-lorryStock.ULP + tt-ldunld.LDP) - tt-ldunld.ULP.
+                    tt-ldunld.RDP     = (tt-lorryStock.ULP + tt-ldunld.LDP + cntGRRD) - tt-ldunld.ULP.
                 END.
                 ELSE
                 DO:

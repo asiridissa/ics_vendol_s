@@ -238,8 +238,8 @@ IF SESSION:DISPLAY-TYPE = "GUI":U THEN
   CREATE WINDOW C-Win ASSIGN
          HIDDEN             = YES
          TITLE              = "LMS - Customers"
-         COLUMN             = 1.14
-         ROW                = 1.27
+         COLUMN             = 1.72
+         ROW                = 1.15
          HEIGHT             = 26.54
          WIDTH              = 144.14
          MAX-HEIGHT         = 30.08

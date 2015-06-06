@@ -170,7 +170,7 @@ END.
 ON CHOOSE OF btnViewLog IN FRAME DEFAULT-FRAME /* ViewLog */
 DO:
     DOS SILENT VALUE("@echo off
-notepad E:\ICS\bin\print\Day_End.log
+notepad E:\ICS_Vendol\bin\print\Day_End.log
 @echo off.").
 /*     DOS SILENT START value("copy") VALUE("/y E:\ICS\bin\print\Day_End.log E:\ICS\bin\print\Day_End_Log.log"). */
 /*     DOS SILENT START notepad VALUE("E:\ICS\bin\print\Day_End_Log.log").                                                 */

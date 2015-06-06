@@ -29,7 +29,7 @@ DEFINE VARIABLE FilterTo AS CHAR     NO-UNDO .
 DEFINE TEMP-TABLE tt-dailyReport
     FIELD ID        AS INT     
     FIELD bill#        AS INT     
-    FIELD BillNo    AS INT                 
+    FIELD BillNo    AS CHAR                 
     FIELD Customer  AS CHAR                 
     FIELD TolSale   AS DECIMAL                 
     FIELD TolValue  AS DECIMAL                 
@@ -78,7 +78,7 @@ DEFINE TEMP-TABLE tt-dailyReport
     ~{&OPEN-QUERY-brw}
 
 /* Standard List Definitions                                            */
-&Scoped-Define ENABLED-OBJECTS RECT-1 RECT-4 filTotal filTotalFissu ~
+&Scoped-Define ENABLED-OBJECTS filTotal filTotalFissu RECT-1 RECT-4 ~
 filTotalCash radTimePeriod cmbVeh btnView filTotalDisc filTotalExp ~
 filTotalCredit filValue filTotalDam btnPrint filTotalCheque filToPay ~
 filTotalGr brw 
@@ -216,7 +216,7 @@ DEFINE BROWSE brw
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS brw C-Win _FREEFORM
   QUERY brw DISPLAY
       /*       ID       FORMAT ">>9" LABEL "No." */
-    BillNo   FORMAT ">99999"  
+    BillNo   FORMAT "X(20)":U WIDTH 8  
     Customer FORMAT "X(50)":U
     TolSale  FORMAT "->,>>>,>>9.99" LABEL "Total Sale"
     Ex       FORMAT ">>,>>9.99"  LABEL "Expiry"
@@ -293,7 +293,7 @@ DEFINE FRAME DEFAULT-FRAME
 IF SESSION:DISPLAY-TYPE = "GUI":U THEN
   CREATE WINDOW C-Win ASSIGN
          HIDDEN             = YES
-         TITLE              = "Error"
+         TITLE              = "Billing Report"
          COLUMN             = 1.57
          ROW                = 1.23
          HEIGHT             = 26.54
@@ -386,7 +386,7 @@ CREATE CONTROL-FRAME CtrlFrame-2 ASSIGN
 
 &Scoped-define SELF-NAME C-Win
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL C-Win C-Win
-ON END-ERROR OF C-Win /* Error */
+ON END-ERROR OF C-Win /* Billing Report */
 OR ENDKEY OF {&WINDOW-NAME} ANYWHERE DO:
   /* This case occurs when the user presses the "Esc" key.
      In a persistently run window, just ignore this.  If we did not, the
@@ -399,17 +399,11 @@ END.
 
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL C-Win C-Win
-ON WINDOW-CLOSE OF C-Win /* Error */
+ON WINDOW-CLOSE OF C-Win /* Billing Report */
 DO:
   /* This event will close the window and terminate the procedure.  */
-  MESSAGE "Conferm to close?" VIEW-AS ALERT-BOX QUESTION BUTTONS YES-NO UPDATE yn AS LOGICAL.
-    IF yn = YES THEN
-    DO:
       APPLY "CLOSE":U TO THIS-PROCEDURE.
       RETURN NO-APPLY.
-    END.
-    ELSE
-        RETURN NO-APPLY.
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -779,7 +773,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
                 tmpUnitPrice = itms.unitPriceS.
             RELEASE itms.
-            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpGR = tmpGR + (recipts.GRRD * tmpUnitPrice).
             tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
             tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
             IF recipts.ItmDiscount = 100.00 THEN
@@ -834,7 +828,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
                 tmpUnitPrice = itms.unitPriceS.
             RELEASE itms.
-            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpGR = tmpGR + (recipts.GRRD * tmpUnitPrice).
             tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
             tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
             IF recipts.ItmDiscount = 100.00 THEN
@@ -897,7 +891,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
                 tmpUnitPrice = itms.unitPriceS.
             RELEASE itms.
-            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpGR = tmpGR + (recipts.GRRD * tmpUnitPrice).
             tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
             tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
             IF recipts.ItmDiscount = 100.00 THEN
@@ -952,7 +946,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
                 tmpUnitPrice = itms.unitPriceS.
             RELEASE itms.
-            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpGR = tmpGR + (recipts.GRRD * tmpUnitPrice).
             tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
             tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
             IF recipts.ItmDiscount = 100.00 THEN
@@ -1032,7 +1026,7 @@ PROCEDURE enable_UI :
           filTotalExp filTotalCredit filValue filTotalDam filTotalCheque 
           filToPay filTotalGr 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
-  ENABLE RECT-1 RECT-4 filTotal filTotalFissu filTotalCash radTimePeriod cmbVeh 
+  ENABLE filTotal filTotalFissu RECT-1 RECT-4 filTotalCash radTimePeriod cmbVeh 
          btnView filTotalDisc filTotalExp filTotalCredit filValue filTotalDam 
          btnPrint filTotalCheque filToPay filTotalGr brw 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
@@ -1062,7 +1056,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
                 tmpUnitPrice = itms.unitPriceS.
             RELEASE itms.
-            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpGR = tmpGR + (recipts.GRRD * tmpUnitPrice).
             tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
             tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
             IF recipts.ItmDiscount = 100.00 THEN
@@ -1117,7 +1111,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
                 tmpUnitPrice = itms.unitPriceS.
             RELEASE itms.
-            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpGR = tmpGR + (recipts.GRRD * tmpUnitPrice).
             tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
             tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
             IF recipts.ItmDiscount = 100.00 THEN
@@ -1190,7 +1184,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
                 tmpUnitPrice = itms.unitPriceS.
             RELEASE itms.
-            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpGR = tmpGR + (recipts.GRRD * tmpUnitPrice).
             tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
             tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
             IF recipts.ItmDiscount = 100.00 THEN
@@ -1245,7 +1239,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
             FIND FIRST itms WHERE itms.itmID = recipts.item#.
                 tmpUnitPrice = itms.unitPriceS.
             RELEASE itms.
-            tmpGR = tmpGR + (recipts.goodreturnP * tmpUnitPrice).
+            tmpGR = tmpGR + (recipts.GRRD * tmpUnitPrice).
             tmpDmg = tmpDmg + (recipts.damP * tmpUnitPrice).
             tmpExp = tmpExp + (recipts.expP * tmpUnitPrice).
             IF recipts.ItmDiscount = 100.00 THEN

@@ -156,7 +156,7 @@ DEFINE VARIABLE filAmount AS DECIMAL FORMAT ">,>>>,>>9.99":U INITIAL 0
      SIZE 35 BY .88
      BGCOLOR 15 FGCOLOR 1 FONT 10 NO-UNDO.
 
-DEFINE VARIABLE filBillNo AS INTEGER FORMAT ">>>>>>9":U INITIAL 0 
+DEFINE VARIABLE filBillNo AS CHARACTER FORMAT "X(20)":U INITIAL "0" 
      LABEL "BillNo" 
      VIEW-AS FILL-IN 
      SIZE 9 BY .88
@@ -221,7 +221,7 @@ DEFINE QUERY brwTransHistory FOR
 DEFINE BROWSE brwPendingBills
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS brwPendingBills C-Win _STRUCTURED
   QUERY brwPendingBills NO-LOCK DISPLAY
-      bills.BillNo FORMAT ">>>>>9":U WIDTH 7
+      bills.BillNo FORMAT "x(20)":U WIDTH 9
       bills.bilDate FORMAT "99/99/99":U WIDTH 7.86
       bills.cusName COLUMN-LABEL "Customer" FORMAT "x(200)":U WIDTH 49
       bills.tol COLUMN-LABEL "Total" FORMAT "->,>>>,>>>,>>9.99":U
@@ -384,7 +384,7 @@ THEN C-Win:HIDDEN = no.
      _Options          = "NO-LOCK INDEXED-REPOSITION"
      _OrdList          = "ics.bills.bilDate|no,ics.bills.BillNo|yes"
      _FldNameList[1]   > ics.bills.BillNo
-"bills.BillNo" ? ">>>>>9" "int64" ? ? ? ? ? ? no ? no no "7" yes no no "U" "" "" "" "" "" "" 0 no 0 no no
+"bills.BillNo" ? ? "character" ? ? ? ? ? ? no ? no no "9" yes no no "U" "" "" "" "" "" "" 0 no 0 no no
      _FldNameList[2]   > ics.bills.bilDate
 "bills.bilDate" ? ? "date" ? ? ? ? ? ? no ? no no "7.86" yes no no "U" "" "" "" "" "" "" 0 no 0 no no
      _FldNameList[3]   > ics.bills.cusName
@@ -473,12 +473,8 @@ END.
 ON WINDOW-CLOSE OF C-Win /* Cache  Credit payments */
 DO:
   /* This event will close the window and terminate the procedure.  */
-    MESSAGE "Conferm to close?" VIEW-AS ALERT-BOX QUESTION BUTTONS YES-NO UPDATE yn AS LOGICAL.
-    IF yn = YES THEN
-    DO:
         APPLY "CLOSE":U TO THIS-PROCEDURE.
         RETURN NO-APPLY.
-    END.
 END.
 
 /* _UIB-CODE-BLOCK-END */

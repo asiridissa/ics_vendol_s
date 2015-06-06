@@ -17,7 +17,7 @@ DEFINE VARIABLE calendr3 AS COM-HANDLE   NO-UNDO.
 
 DEFINE TEMP-TABLE tt-chqBills
     FIELD bill#        AS INTEGER LABEL "   Bill #        "
-    FIELD billNo        AS INTEGER LABEL "   Bill No        "
+    FIELD billNo        AS CHAR LABEL "   Bill No        "
     FIELD billDate     AS DATE    LABEL " Bill Date "  
     FIELD tol          AS DECIMAL LABEL "       Total        "
     FIELD creditAmount AS DECIMAL LABEL "       To Collect   "
@@ -197,7 +197,7 @@ DEFINE VARIABLE filBank AS CHARACTER FORMAT "X(50)":U
      SIZE 35 BY .88
      BGCOLOR 15 FGCOLOR 1  NO-UNDO.
 
-DEFINE VARIABLE filBIll# AS INTEGER FORMAT ">>>>>>>>>9":U INITIAL 0 
+DEFINE VARIABLE filBIll# AS CHARACTER FORMAT "X(20)":U INITIAL "0" 
      LABEL "Bill No" 
      VIEW-AS FILL-IN 
      SIZE 14 BY .88
@@ -315,7 +315,7 @@ DEFINE BROWSE brwCheques
 DEFINE BROWSE brwCreditAmounts
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS brwCreditAmounts C-Win _FREEFORM
   QUERY brwCreditAmounts DISPLAY
-      tt-chqBills.billNo FORMAT ">>>>>>>9":U
+      tt-chqBills.billNo FORMAT "X(20)":U
  tt-chqBills.billDate FORMAT "99/99/9999":U
  tt-chqBills.tol FORMAT ">>>,>>>,>>>,>>9.99":U
  tt-chqBills.creditAmount FORMAT ">>>,>>>,>>>,>>9.99":U
@@ -579,15 +579,9 @@ END.
 ON WINDOW-CLOSE OF C-Win /* Cheques */
 DO:
   /* This event will close the window and terminate the procedure.  */
-  MESSAGE "Confrm to close the window?" VIEW-AS ALERT-BOX INFO BUTTONS YES-NO UPDATE yn AS LOGICAL.
-  IF yn = YES THEN
-    DO:
       session_Window = session_Window - 1.
       APPLY "CLOSE":U TO THIS-PROCEDURE.
       RETURN NO-APPLY.
-    END.
-  ELSE
-    RETURN NO-APPLY.
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -960,9 +954,6 @@ DO:
     END.
     
     
-    MESSAGE "Conferm to save the record?" VIEW-AS ALERT-BOX INFO BUTTONS YES-NO UPDATE yn AS LOGICAL.
-    IF yn = YES THEN
-    DO:
         IF addModify = "add" THEN
         DO:
             FIND FIRST cheques WHERE cheques.chqNo = filChqNo NO-ERROR.
@@ -1031,7 +1022,7 @@ DO:
                     CREATE billChqAssoc.
                     ASSIGN
                         billChqAssoc.chq# = filChqNo
-                        billChqAssoc.bill# = filBIll#
+                        billChqAssoc.bill# = filBIllId
                         billChqAssoc.amount = tt-chqBills.debitAmount.
         
                     FIND FIRST bills WHERE bills.bill# = tt-chqBills.bill#.
@@ -1052,7 +1043,6 @@ DO:
               EACH ics.cheques NO-LOCK,
               EACH ics.customer WHERE customer.cusID = cheques.cusID NO-LOCK INDEXED-REPOSITION.
         APPLY "VALUE-CHANGED":U TO brwCheques.
-    END.
 END.
 
 /* _UIB-CODE-BLOCK-END */

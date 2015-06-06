@@ -178,7 +178,7 @@ DEFINE QUERY brw2 FOR
 DEFINE BROWSE brw
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS brw C-Win _FREEFORM
   QUERY brw NO-LOCK DISPLAY
-      tt-bills.BillNo FORMAT ">>>>>>>>>9":U
+      tt-bills.BillNo FORMAT "X(20)":U WIDTH 8
     tt-bills.bilDate FORMAT "99-99-9999":U WIDTH 10
     tt-areas.descrip COLUMN-LABEL "Area" FORMAT "x(30)":U
     tt-bills.cusName COLUMN-LABEL "Customer" FORMAT "x(60)":U
@@ -193,7 +193,7 @@ DEFINE BROWSE brw
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
     WITH NO-ROW-MARKERS SEPARATORS NO-TAB-STOP SIZE 143 BY 18.85
-         FONT 9
+         FONT 10
          TITLE "Collection Report" ROW-HEIGHT-CHARS .55 FIT-LAST-COLUMN.
 
 DEFINE BROWSE brw2
@@ -265,7 +265,7 @@ IF SESSION:DISPLAY-TYPE = "GUI":U THEN
          HIDDEN             = YES
          TITLE              = "Collection Report"
          COLUMN             = 1.57
-         ROW                = 1.04
+         ROW                = 1.23
          HEIGHT             = 26.46
          WIDTH              = 143.86
          MAX-HEIGHT         = 26.54
@@ -404,14 +404,8 @@ END.
 ON WINDOW-CLOSE OF C-Win /* Collection Report */
 DO:
   /* This event will close the window and terminate the procedure.  */
-  MESSAGE "Conferm to close?" VIEW-AS ALERT-BOX QUESTION BUTTONS YES-NO UPDATE yn AS LOGICAL.
-    IF yn = YES THEN
-    DO:
       APPLY "CLOSE":U TO THIS-PROCEDURE.
       RETURN NO-APPLY.
-    END.
-    ELSE
-        RETURN NO-APPLY.
 END.
 
 /* _UIB-CODE-BLOCK-END */

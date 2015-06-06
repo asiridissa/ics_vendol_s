@@ -315,8 +315,6 @@ END.
 &Scoped-define SELF-NAME CtrlFrame-2
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL CtrlFrame-2 C-Win OCX.Change
 PROCEDURE CtrlFrame-2.DTPicker.Change .
-cmbArea = WEEKDAY(calendr:VALUE) - 1.
-  DISPLAY cmbArea WITH FRAME {&FRAME-NAME}.
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */
@@ -331,7 +329,6 @@ PROCEDURE CtrlFrame-2.DTPicker.Click .
   Notes:       
 ------------------------------------------------------------------------------*/
 
-calendr:VALUE = STRING(TODAY,"99/99/9999").
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */
@@ -375,7 +372,7 @@ DO ON ERROR   UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK
   
   RUN areaLoader.
   
-  cmbArea = WEEKDAY(calendr:VALUE) - 1.
+/*   cmbArea = WEEKDAY(calendr:VALUE) - 1. */
 
   DISPLAY cmbArea WITH FRAME {&FRAME-NAME}.
 

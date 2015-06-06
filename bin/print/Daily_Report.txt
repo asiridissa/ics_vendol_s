@@ -1,7 +1,7 @@
-||From : 03/27/2014  To : 03/27/2015|||Vehical : All Vehicals||||By user : admin
+||Date : 01/07/2015|||Vehical : 123456 Test Veh||||By user : asiri
 NO|Bill No|Customer|Tol Sale|Expiries|Damages|Discount|GR|F/Issu|Cash|Cheques|Debit|Credits
-1|10A|STARTEL COM - OTH|1000|0|0|0|0|0|500|0|0|500|
-2|11A|STARTEL COM - OTH|2000|0|0|0|0|0|0|0|100|1900|
+1|1|Test Cus - OTH|100|0|0|100|0|100|50|0|0|50|
+2|2|Test Cus - OTH|400|0|0|100|0|100|0|0|0|400|
 
-||Total|3000|0|0|0|0|0|500|0|100|2400
-||Value|3000
+||Total|500|0|0|200|0|200|50|0|0|450
+||Value|700

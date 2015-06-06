@@ -1,2 +1,2 @@
-PROPATH = "E:\ICS\bin," + PROPATH.
-CONNECT -db E:\ICS\db\ics -1 NO-ERROR.
+PROPATH = "E:\ICS_Vendol\bin," + PROPATH.
+CONNECT -db E:\ICS_Vendol\db\ics -1 NO-ERROR.

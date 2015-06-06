@@ -318,10 +318,10 @@ IF SESSION:DISPLAY-TYPE = "GUI":U THEN
   CREATE WINDOW C-Win ASSIGN
          HIDDEN             = YES
          TITLE              = "LMS - Items"
-         COLUMN             = 1.29
-         ROW                = 1
+         COLUMN             = 1.72
+         ROW                = 1.23
          HEIGHT             = 26.54
-         WIDTH              = 143.43
+         WIDTH              = 144.14
          MAX-HEIGHT         = 26.54
          MAX-WIDTH          = 144.14
          VIRTUAL-HEIGHT     = 26.54
@@ -458,15 +458,8 @@ END.
 ON WINDOW-CLOSE OF C-Win /* LMS - Items */
 DO:
   /* This event will close the window and terminate the procedure.  */
-  MESSAGE "Confrm to close the window?" VIEW-AS ALERT-BOX INFO BUTTONS YES-NO UPDATE yn AS LOGICAL.
-  IF yn = YES THEN
-    DO:
-/*       session_Window = session_Window - 1. */
       APPLY "CLOSE":U TO THIS-PROCEDURE.
       RETURN NO-APPLY.
-    END.
-  ELSE
-    RETURN NO-APPLY.
 END.
 
 /* _UIB-CODE-BLOCK-END */

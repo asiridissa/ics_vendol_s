@@ -1,34 +1,8 @@
-|||||From : 01/01/2013 To : 03/28/2015    By user : admin
+|||||From : 01/01/2013 To : 01/08/2015    By user : admin
 |No|Date|Bill No.|Customer|Bill Total|Paid|Collection|Days
-Other Custermer (OTH)
-|1|03/27/15|10A|STARTEL COM|1000|500|500|1|
-|2|03/27/15|11A|STARTEL COM|2000|100|1900|1|
-|||Sub-Total :|2|3000|600|2400|
-Yatalamattha Banbarapura (2MO)
-|||Sub-Total :|0|0|0|0|
-Kottawa Yatalamatta (2TU)
-|||Sub-Total :|0|0|0|0|
-Nagoda Unanvitiya (2WE)
-|||Sub-Total :|0|0|0|0|
-Ovilana Labuduwa (2TH)
-|||Sub-Total :|0|0|0|0|
-Thalagaha Kuruduwatta (2FR)
-|||Sub-Total :|0|0|0|0|
-Wanduramba Ovilana (2SA)
-|||Sub-Total :|0|0|0|0|
-Dangedara  Elliot Road (MON)
-|||Sub-Total :|0|0|0|0|
-Kuruduwatta  Bataduwa (TUE)
-|||Sub-Total :|0|0|0|0|
-Narawala  Ambalanwatta (WED)
-|||Sub-Total :|0|0|0|0|
-Milidduwa Magalle (THU)
-|||Sub-Total :|0|0|0|0|
-Kithulampitiya Karapitiya (FRI)
-|||Sub-Total :|0|0|0|0|
-Kuruduwatta Kottawa (SAT)
-|||Sub-Total :|0|0|0|0|
-Udugama (UDM)
-|||Sub-Total :|0|0|0|0|
+Other (OTH)
+|1|01/07/15|1|Test Cus|100|50|50|1|
+|2|01/07/15|2|Test Cus|400|0|400|1|
+|||Sub-Total :|2|500|50|450|
  
-|||Total :|2|3000|600|2400|
+|||Total :|2|500|50|450|

@@ -20,23 +20,23 @@ FOR EACH recipts.
     DELETE recipts.
 END.
 
-FOR EACH itms.
-	IF itmID = 21 or itmID = 171 or itmID = 23 or itmID = 24 or itmID = 142 THEN
-	DO:
-		itms.noOfCases = 10.
-		itms.stockC    = 10.
-        itms.noOfUnits = 0.
-		itms.stockP    = 0.
-	END.
-	ELSE
-	DO:
-		itms.noOfCases = 0.
-		itms.noOfUnits = 0.
-		itms.stockP    = 0.
-		itms.stockC    = 0.
-	END.
-END.
-
+/* FOR EACH itms.                                                                   */
+/*     IF itmID = 21 or itmID = 171 or itmID = 23 or itmID = 24 or itmID = 142 THEN */
+/*     DO:                                                                          */
+/*         itms.noOfCases = 10.                                                     */
+/*         itms.stockC    = 10.                                                     */
+/*         itms.noOfUnits = 0.                                                      */
+/*         itms.stockP    = 0.                                                      */
+/*     END.                                                                         */
+/*     ELSE                                                                         */
+/*     DO:                                                                          */
+/*         itms.noOfCases = 0.                                                      */
+/*         itms.noOfUnits = 0.                                                      */
+/*         itms.stockP    = 0.                                                      */
+/*         itms.stockC    = 0.                                                      */
+/*     END.                                                                         */
+/* END.                                                                             */
+/*                                                                                  */
 /* FOR EACH area.   */
 /*     DELETE area. */
 /* END.             */
