@@ -7,8 +7,8 @@ DO:
 END.
 ELSE
 DO:
-    PROPATH = "E:\ICS_Vendol\bin," + PROPATH.
     PROPATH = REPLACE(PROPATH,"E:\ICS\bin,","").
+    PROPATH = "E:\ICS_Vendol\bin," + PROPATH.
     CONNECT -db E:\ICS_Vendol\db\ics -1 NO-ERROR.
     IF ERROR-STATUS:ERROR THEN
     DO:

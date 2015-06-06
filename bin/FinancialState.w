@@ -17,6 +17,7 @@ DEFINE VARIABLE tmpID AS INTEGER     NO-UNDO INIT 1.
 DEFINE VARIABLE tmpCash AS DECIMAL     NO-UNDO .
 DEFINE VARIABLE tmpCheque AS DECIMAL     NO-UNDO .
 DEFINE VARIABLE tmpCredit AS DECIMAL     NO-UNDO .
+DEFINE VARIABLE tmpVarience AS DECIMAL     NO-UNDO .
 DEFINE VARIABLE tmpGR AS DECIMAL     NO-UNDO .
 DEFINE VARIABLE tmpDmg AS DECIMAL     NO-UNDO .
 DEFINE VARIABLE tmpExp AS DECIMAL     NO-UNDO .
@@ -33,6 +34,7 @@ DEFINE TEMP-TABLE tt-dailyReport
     FIELD Customer  AS CHAR                 
     FIELD TolSale   AS DECIMAL                 
     FIELD TolValue  AS DECIMAL                 
+    FIELD Varience  AS DECIMAL                 
     FIELD Ex        AS DECIMAL                 
     FIELD Dmg       AS DECIMAL                 
     FIELD Discount  AS DECIMAL                 
@@ -48,6 +50,7 @@ DEFINE TEMP-TABLE tt-dailyReport
 DEFINE TEMP-TABLE tt-transactionHistory
     FIELD bill#        AS INT     
     FIELD TolSale   AS DECIMAL                 
+    FIELD Varience  AS DECIMAL                 
     FIELD Ex        AS DECIMAL                 
     FIELD Dmg       AS DECIMAL                 
     FIELD Discount  AS DECIMAL                 
@@ -62,6 +65,7 @@ DEFINE TEMP-TABLE tt-transactionHistory
 DEFINE TEMP-TABLE tt-transactionLastDay
     FIELD bill#        AS INT     
     FIELD TolSale   AS DECIMAL                 
+    FIELD Varience  AS DECIMAL                 
     FIELD Ex        AS DECIMAL                 
     FIELD Dmg       AS DECIMAL                 
     FIELD Discount  AS DECIMAL                 
@@ -92,7 +96,7 @@ DEFINE TEMP-TABLE tt-transactionLastDay
 &Scoped-define INTERNAL-TABLES tt-dailyReport
 
 /* Definitions for BROWSE brw                                           */
-&Scoped-define FIELDS-IN-QUERY-brw /* ID */ BillNo Customer TolSale Ex Dmg Gr FIsu DiscountAmount Cash Cheque Credit Unpaid /* itmName */ /* Weight */ /* /* PriceP */ */ /* BSC */ /* BSP */ /* LDC */ /* LDP */ /* ULC */ /* ULP */   
+&Scoped-define FIELDS-IN-QUERY-brw /* ID */ BillNo Customer TolSale Varience Ex Dmg Gr FIsu DiscountAmount Cash Cheque Credit Unpaid /* itmName */ /* Weight */ /* /* PriceP */ */ /* BSC */ /* BSP */ /* LDC */ /* LDP */ /* ULC */ /* ULP */   
 &Scoped-define ENABLED-FIELDS-IN-QUERY-brw   
 &Scoped-define SELF-NAME brw
 &Scoped-define QUERY-STRING-brw FOR EACH tt-dailyReport BY BillNo
@@ -106,13 +110,13 @@ DEFINE TEMP-TABLE tt-transactionLastDay
     ~{&OPEN-QUERY-brw}
 
 /* Standard List Definitions                                            */
-&Scoped-Define ENABLED-OBJECTS filTotal filTotalFissu RECT-1 RECT-4 ~
-filTotalCash radTimePeriod cmbVeh btnView filTotalDisc filTotalExp ~
-filTotalCredit filValue filTotalDam btnPrint filTotalCheque filToCollect ~
-filTotalGr brw 
+&Scoped-Define ENABLED-OBJECTS filTotal filTotalFissu filTotalCash RECT-1 ~
+RECT-4 radTimePeriod cmbVeh btnView filTotalDisc filTotalExp filTotalCredit ~
+filValue filTotalDam filTotalCheque btnPrint filToCollect filTotalGr ~
+filTotalVarience brw 
 &Scoped-Define DISPLAYED-OBJECTS filTotal filTotalFissu filTotalCash ~
 radTimePeriod cmbVeh filTotalDisc filTotalExp filTotalCredit filValue ~
-filTotalDam filTotalCheque filToCollect filTotalGr 
+filTotalDam filTotalCheque filToCollect filTotalGr filTotalVarience 
 
 /* Custom List Definitions                                              */
 /* List-1,List-2,List-3,List-4,List-5,List-6                            */
@@ -210,6 +214,12 @@ DEFINE VARIABLE filTotalGr AS DECIMAL FORMAT ">>>,>>>,>>9.99":U INITIAL 0
      SIZE 16 BY .88
      BGCOLOR 0 FGCOLOR 14  NO-UNDO.
 
+DEFINE VARIABLE filTotalVarience AS DECIMAL FORMAT "->>,>>>,>>9.99":U INITIAL 0 
+     LABEL "Varience" 
+     VIEW-AS FILL-IN 
+     SIZE 16 BY .88
+     BGCOLOR 15 FGCOLOR 12  NO-UNDO.
+
 DEFINE VARIABLE filValue AS DECIMAL FORMAT "->>>,>>>,>>9.99":U INITIAL 0 
      LABEL "Value" 
      VIEW-AS FILL-IN 
@@ -245,16 +255,17 @@ DEFINE BROWSE brw
   QUERY brw DISPLAY
       /*       ID       FORMAT ">>9" LABEL "No." */
     BillNo   FORMAT "X(20)":U  WIDTH 8
-    Customer FORMAT "X(50)":U
+    Customer FORMAT "X(50)":U WIDTH 35
     TolSale  FORMAT "->,>>>,>>9.99" LABEL "Total Sale"
+        Varience  FORMAT "->,>>9.99" LABEL "Varience" WIDTH 8
     Ex       FORMAT ">>,>>9.99"  LABEL "Expiry"
     Dmg      FORMAT ">>,>>9.99"  LABEL "Damage"
     Gr       FORMAT ">>,>>9.99" LABEL "G/Return"
     FIsu     FORMAT ">>,>>9.99" LABEL "F/Issue"
     DiscountAmount FORMAT ">>,>>9.99" LABEL "Discount"
-    Cash     FORMAT ">,>>>,>>9.99"
-    Cheque   FORMAT ">,>>>,>>9.99"
-    Credit   FORMAT ">,>>>,>>9.99" LABEL "Debit"
+    Cash     FORMAT ">,>>>,>>9.99" WIDTH 8
+    Cheque   FORMAT ">,>>>,>>9.99" WIDTH 8
+    Credit   FORMAT ">,>>>,>>9.99" LABEL "Debit" WIDTH 8
     Unpaid   FORMAT ">,>>>,>>9.99" LABEL "Credit" COLUMN-FGCOLOR 12
     /* itmName FORMAT "X(38)":U LABEL "Item Name" */
     /* Weight  FORMAT ">>>9.999"                  */
@@ -277,19 +288,20 @@ DEFINE BROWSE brw
 DEFINE FRAME DEFAULT-FRAME
      filTotal AT ROW 1.04 COL 73.29 COLON-ALIGNED WIDGET-ID 236
      filTotalFissu AT ROW 1.04 COL 98.72 COLON-ALIGNED WIDGET-ID 256
-     filTotalCash AT ROW 1.27 COL 126 COLON-ALIGNED WIDGET-ID 250
+     filTotalCash AT ROW 1.04 COL 126 COLON-ALIGNED WIDGET-ID 250
      radTimePeriod AT ROW 1.31 COL 37.57 NO-LABEL WIDGET-ID 264
      cmbVeh AT ROW 1.46 COL 6.86 COLON-ALIGNED WIDGET-ID 100
      btnView AT ROW 1.62 COL 50.57 WIDGET-ID 2
      filTotalDisc AT ROW 1.88 COL 73.29 COLON-ALIGNED WIDGET-ID 242
      filTotalExp AT ROW 1.88 COL 98.72 COLON-ALIGNED WIDGET-ID 238
-     filTotalCredit AT ROW 2.27 COL 126 COLON-ALIGNED WIDGET-ID 248
+     filTotalCredit AT ROW 1.88 COL 126 COLON-ALIGNED WIDGET-ID 248
      filValue AT ROW 2.73 COL 73.29 COLON-ALIGNED WIDGET-ID 278
      filTotalDam AT ROW 2.73 COL 98.72 COLON-ALIGNED WIDGET-ID 240
+     filTotalCheque AT ROW 2.73 COL 126 COLON-ALIGNED WIDGET-ID 246
      btnPrint AT ROW 2.85 COL 50.57 WIDGET-ID 234
-     filTotalCheque AT ROW 3.35 COL 126 COLON-ALIGNED WIDGET-ID 246
      filToCollect AT ROW 3.58 COL 73.29 COLON-ALIGNED WIDGET-ID 280
      filTotalGr AT ROW 3.58 COL 98.72 COLON-ALIGNED WIDGET-ID 258
+     filTotalVarience AT ROW 3.58 COL 126 COLON-ALIGNED WIDGET-ID 282
      brw AT ROW 4.5 COL 1.43 WIDGET-ID 200
      "To:" VIEW-AS TEXT
           SIZE 3.14 BY .62 AT ROW 3.42 COL 5.57 WIDGET-ID 274
@@ -352,7 +364,7 @@ ELSE {&WINDOW-NAME} = CURRENT-WINDOW.
   VISIBLE,,RUN-PERSISTENT                                               */
 /* SETTINGS FOR FRAME DEFAULT-FRAME
    FRAME-NAME                                                           */
-/* BROWSE-TAB brw filTotalGr DEFAULT-FRAME */
+/* BROWSE-TAB brw filTotalVarience DEFAULT-FRAME */
 IF SESSION:DISPLAY-TYPE = "GUI":U AND VALID-HANDLE(C-Win)
 THEN C-Win:HIDDEN = no.
 
@@ -464,7 +476,7 @@ DO:
     DO:
         DEFINE VARIABLE tempCount AS INTEGER     NO-UNDO.
     
-        OUTPUT TO VALUE("E:\ICS\bin\print\TransactionReport.txt").
+        OUTPUT TO VALUE("E:\ICS_Vendol\bin\print\TransactionReport.txt").
             
             CASE radTimePeriod:
                 WHEN "Custom" THEN
@@ -481,7 +493,7 @@ DO:
             END CASE.
             
             PUT UNFORMAT "||" + period + "|||Vehical : " + veh + "||||By user : " + session_User SKIP. 
-            PUT UNFORMAT "NO|Bill No|Customer|Tol Sale|Expiries|Damages|Discount|GR|F/Issu|Cash|Cheques|Debit|Credits" SKIP. 
+            PUT UNFORMAT "NO|Bill No|Customer|Tol Sale|Varience|Expiries|Damages|Discount|GR|F/Issu|Cash|Cheques|Debit|Credits" SKIP. 
                 
             tempCount = 1.
         
@@ -490,6 +502,7 @@ DO:
                PUT UNFORMAT STRING( BillNo   ) + "|" .
                PUT UNFORMAT STRING( Customer ) + "|" .
                PUT UNFORMAT STRING( TolSale  ) + "|" .
+               PUT UNFORMAT STRING( Varience  ) + "|" .
                PUT UNFORMAT STRING( Ex       ) + "|".
                PUT UNFORMAT STRING( Dmg      ) + "|".
                PUT UNFORMAT STRING( Discount ) + "|".
@@ -504,6 +517,7 @@ DO:
             PUT UNFORMAT "~n".
             PUT UNFORMAT "||Total|"
                  + string( filTotal) + "|"
+                + string( filTotalVarience) + "|"
                  + string( filTotalExp) + "|"
                  + string( filTotalDam) + "|"
                  + string( filTotalDisc) + "|"
@@ -518,6 +532,7 @@ DO:
 
             FOR EACH tt-transactionHistory.
                ACCUMULATE tt-transactionHistory.TolSale  (total).
+               ACCUMULATE tt-transactionHistory.Varience  (total).
                ACCUMULATE tt-transactionHistory.Ex       (total).
                ACCUMULATE tt-transactionHistory.Dmg      (total).
                ACCUMULATE tt-transactionHistory.Discount (total).
@@ -531,6 +546,7 @@ DO:
 
             PUT UNFORMAT "||Upto Date Total|"                     
                 + string(ACCUMULATE total tt-transactionHistory.TolSale )  + "|"              
+                + string(ACCUMULATE total tt-transactionHistory.Varience )  + "|"              
                 + string(ACCUMULATE total tt-transactionHistory.Ex      )  + "|"           
                 + string(ACCUMULATE total tt-transactionHistory.Dmg     )  + "|"           
                 + string(ACCUMULATE total tt-transactionHistory.Discount)  + "|"          
@@ -543,8 +559,8 @@ DO:
 
         OUTPUT CLOSE.
         
-        DOS SILENT START VALUE("E:\ICS\bin\print\TransactionReport.bat").
-        DOS SILENT START excel VALUE("E:\ICS\bin\print\TransactionReport.xlsx").
+        DOS SILENT START VALUE("E:\ICS_Vendol\bin\print\TransactionReport.bat").
+        DOS SILENT START excel VALUE("E:\ICS_Vendol\bin\print\TransactionReport.xlsx").
     END.
 
     {&SELF-NAME}:LABEL = "Print".
@@ -575,6 +591,7 @@ DO:
     filTotalGr     = 0.
     filValue       = 0.
     filToCollect   = 0.
+    filTotalVarience = 0.
 
     tempDate = calendr:VALUE.
     tempDateTo = calendrTo:VALUE.
@@ -605,6 +622,7 @@ DO:
             filTotalGr     = 0.
             filValue       = 0.
             filToCollect   = 0.
+            filTotalVarience = 0.
 
             FOR EACH tt-dailyReport.
                 filTotal        = filTotal       + tt-dailyReport.TolSale.
@@ -618,13 +636,14 @@ DO:
                 filTotalGr      = filTotalGr     + tt-dailyReport.Gr.
                 filTotalFissu   = filTotalFissu  + tt-dailyReport.FIsu.
                 filToCollect    = filToCollect   + tt-dailyReport.Unpaid.
+                filTotalVarience = filTotalVarience + tt-dailyReport.Varience.
             END.
         END.
         ELSE MESSAGE "No records to show." VIEW-AS ALERT-BOX INFO BUTTONS OK.
 
         DISPLAY filToCollect filTotal filValue filTotalDam filTotalExp filTotalDisc
             filTotalCash filTotalCredit filTotalCheque
-            filTotalGr filTotalFissu WITH FRAME {&FRAME-NAME}.
+            filTotalGr filTotalFissu filTotalVarience WITH FRAME {&FRAME-NAME}.
 
         {&SELF-NAME}:LABEL = "View".
 END.
@@ -952,6 +971,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
                     tt-dailyReport.Customer = bills.cusName + " - " + area.areaCode.
                     tt-dailyReport.TolSale  = bills.tol            .              
                     tt-dailyReport.TolValue = bills.tol + bills.discountedAmount  .
+                    tt-dailyReport.Varience = bills.varience         .   
                     tt-dailyReport.Unpaid   = bills.tol - bills.paidAmount.
         
                     FOR EACH recipts WHERE recipts.bill# = bills.bill# .           
@@ -1154,6 +1174,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
                     tt-dailyReport.Customer = bills.cusName + " - " + area.areaCode.
                     tt-dailyReport.TolSale  = bills.tol            .              
                     tt-dailyReport.TolValue = bills.tol + bills.discountedAmount  .
+                    tt-dailyReport.Varience = bills.varience         .   
                     tt-dailyReport.Unpaid   = bills.tol - bills.paidAmount.
         
                     FOR EACH recipts WHERE recipts.bill# = bills.bill# .   
@@ -1242,6 +1263,7 @@ EMPTY TEMP-TABLE tt-transactionHistory.
                     CREATE tt-transactionHistory.
                     tt-transactionHistory.bill#  = Payments.bill#.
                     tt-transactionHistory.TolSale  = bills.tol            .              
+                    tt-transactionHistory.Varience  = bills.varience            .              
         
                     FOR EACH recipts WHERE recipts.bill# = bills.bill# .           
                         FIND FIRST itms WHERE itms.itmID = recipts.item#.          
@@ -1336,11 +1358,11 @@ PROCEDURE enable_UI :
   RUN control_load.
   DISPLAY filTotal filTotalFissu filTotalCash radTimePeriod cmbVeh filTotalDisc 
           filTotalExp filTotalCredit filValue filTotalDam filTotalCheque 
-          filToCollect filTotalGr 
+          filToCollect filTotalGr filTotalVarience 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
-  ENABLE filTotal filTotalFissu RECT-1 RECT-4 filTotalCash radTimePeriod cmbVeh 
+  ENABLE filTotal filTotalFissu filTotalCash RECT-1 RECT-4 radTimePeriod cmbVeh 
          btnView filTotalDisc filTotalExp filTotalCredit filValue filTotalDam 
-         btnPrint filTotalCheque filToCollect filTotalGr brw 
+         filTotalCheque btnPrint filToCollect filTotalGr filTotalVarience brw 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
   {&OPEN-BROWSERS-IN-QUERY-DEFAULT-FRAME}
   VIEW C-Win.
@@ -1393,6 +1415,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
         tt-dailyReport.Customer = bills.cusName + " - " + area.descrip       .   
         tt-dailyReport.TolSale  = bills.tol            .   
         tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
+        tt-dailyReport.Varience = bills.varience         .   
         tt-dailyReport.Ex       = tmpExp               .
         tt-dailyReport.Dmg      = tmpDmg               .
         tt-dailyReport.Discount = bills.discountedAmount   .
@@ -1447,6 +1470,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
         tt-dailyReport.Customer = bills.cusName + " - " + area.descrip       .   
         tt-dailyReport.TolSale  = bills.tol            .   
         tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
+        tt-dailyReport.Varience = bills.varience         .   
         tt-dailyReport.Ex       = tmpExp               .
         tt-dailyReport.Dmg      = tmpDmg               .
         tt-dailyReport.Discount = bills.discountedAmount   .
@@ -1494,6 +1518,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
                     tt-dailyReport.Customer = bills.cusName + " - " + area.areaCode.
                     tt-dailyReport.TolSale  = bills.tol            .              
                     tt-dailyReport.TolValue = bills.tol + bills.discountedAmount  .
+                    tt-dailyReport.Varience = bills.varience         .   
                     tt-dailyReport.Unpaid   = bills.tol - bills.paidAmount.
         
                     FOR EACH recipts WHERE recipts.bill# = bills.bill# .           
@@ -1605,6 +1630,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
         tt-dailyReport.Customer = bills.cusName + " - " + area.descrip       .   
         tt-dailyReport.TolSale  = bills.tol            .   
         tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
+        tt-dailyReport.Varience = bills.varience         .   
         tt-dailyReport.Ex       = tmpExp               .
         tt-dailyReport.Dmg      = tmpDmg               .
         tt-dailyReport.Discount = bills.discountedAmount   .
@@ -1659,6 +1685,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
         tt-dailyReport.Customer = bills.cusName + " - " + area.descrip       .   
         tt-dailyReport.TolSale  = bills.tol            .   
         tt-dailyReport.TolValue = bills.tol + bills.discountedAmount         .   
+        tt-dailyReport.Varience = bills.varience         .   
         tt-dailyReport.Ex       = tmpExp               .
         tt-dailyReport.Dmg      = tmpDmg               .
         tt-dailyReport.Discount = bills.discountedAmount   .
@@ -1707,6 +1734,7 @@ EMPTY TEMP-TABLE tt-dailyReport.
                     tt-dailyReport.Customer = bills.cusName + " - " + area.areaCode.
                     tt-dailyReport.TolSale  = bills.tol            .              
                     tt-dailyReport.TolValue = bills.tol + bills.discountedAmount  .
+                    tt-dailyReport.Varience = bills.varience         .   
                     tt-dailyReport.Unpaid   = bills.tol - bills.paidAmount.
         
                     FOR EACH recipts WHERE recipts.bill# = bills.bill# .           
