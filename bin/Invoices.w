@@ -752,16 +752,15 @@ END.
 ON CHOOSE OF btnMod IN FRAME EFAULT-FRAME /* Modify */
 DO:
 
-    MESSAGE "This function is temporaray out of service" VIEW-AS ALERT-BOX INFO BUTTONS OK.
-/*   IF filitmName <> "" THEN                                                                                                                                                                        */
-/*   DO:                                                                                                                                                                                             */
-/*       ENABLE fillDiscount btnCancel btnSave filcasePriceB filcasePriceS filunitPriceB filunitPriceS cmbCat  filitmName /*filmaxWeight*/ filnoOfCases filnoOfUnits filunitsPerCase filunitWeightKG */
-/*         WITH FRAME EFAULT-FRAME.                                                                                                                                                                  */
-/*       DISABLE btnDuplicate brwItem btnAdd btnClose btnDel btnMod WITH FRAME EFAULT-FRAME.                                                                                                         */
-/*       addModify = "modify".                                                                                                                                                                       */
-/*   END.                                                                                                                                                                                            */
-/*   ELSE                                                                                                                                                                                            */
-/*       MESSAGE "No records to Modify." VIEW-AS ALERT-BOX ERROR BUTTONS OK.                                                                                                                         */
+  IF filitmName <> "" THEN
+  DO:
+      ENABLE fillDiscount btnCancel btnSave filcasePriceB filcasePriceS filunitPriceB filunitPriceS cmbCat  filitmName /*filmaxWeight*/ filnoOfCases filnoOfUnits filunitsPerCase filunitWeightKG
+        WITH FRAME EFAULT-FRAME.
+      DISABLE btnDuplicate brwItem btnAdd btnClose btnDel btnMod WITH FRAME EFAULT-FRAME.
+      addModify = "modify".
+  END.
+  ELSE
+      MESSAGE "No records to Modify." VIEW-AS ALERT-BOX ERROR BUTTONS OK.
 END.
 
 /* _UIB-CODE-BLOCK-END */
