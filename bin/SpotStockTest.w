@@ -115,7 +115,7 @@ IF SESSION:DISPLAY-TYPE = "GUI":U THEN
          HIDDEN             = YES
          TITLE              = "Spot Stock Test"
          COLUMN             = 50.14
-         ROW                = 11.54
+         ROW                = 11.04
          HEIGHT             = 4.38
          WIDTH              = 55.57
          MAX-HEIGHT         = 16
@@ -334,24 +334,31 @@ DEFINE VARIABLE tolTotalP      AS INTEGER     NO-UNDO.
 DEFINE VARIABLE tolAmountBuy   AS INTEGER     NO-UNDO.
 DEFINE VARIABLE tolAmountSell  AS INTEGER     NO-UNDO.
 
+DEFINE VARIABLE lastBSDate AS DATE        NO-UNDO.
+
 
 OUTPUT TO VALUE("E:\ICS\bin\print\Spot_Stock_Test.txt").
 
     PUT UNFORMAT "No|Product|Weight|Van C|Van P|Stock C|Stock P|Total P|Buying Price|Amount|Selling Price|Amount|" SKIP. 
 
         FOR EACH itms WHERE (stockP + stockC + BSC + BSP) > 0 BY itms.SortID.
-            FIND LAST lorryStock WHERE lorryStock.itmID = itms.itmID.
-                IF AVAILABLE lorryStock THEN
-                DO:
-                    tempVanC = lorryStock.BSC.
-                    tempVanP = lorryStock.BSP.
+            tempVanC       = 0                    .
+            tempVanP       = 0    .
+            FOR EACH vehical.
+                FOR EACH lorryStock WHERE lorryStock.VehID = vehical.ID.
+                    ACCUMULATE lorryStock.crDate (MAX).
                 END.
-                ELSE
-                DO:
-                    tempVanC       = 0                    .
-                    tempVanP       = 0                    .
-                END.
-            RELEASE lorryStock.
+                lastBSDate = ACCUM MAX lorryStock.crDate.
+
+                FIND LAST lorryStock WHERE lorryStock.itmID = itms.itmID AND lorryStock.VehID = vehical.ID AND ics.lorryStock.crDate = lastBSDate NO-ERROR.
+                    IF AVAILABLE lorryStock THEN
+                    DO:
+                        tempVanC = tempVanC + int(lorryStock.BSC).
+                        tempVanP= tempVanP + int(lorryStock.BSP).
+                    END.
+                RELEASE lorryStock.
+            END.
+
             tempStockC     = itms.stockC                 .
             tempStockP     = itms.stockP                 .
             tempTotalP     = tempStockP + tempVanP + ((tempVanC + tempStockC) * unitsPerCase )                .

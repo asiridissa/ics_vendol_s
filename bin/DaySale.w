@@ -438,7 +438,7 @@ IF SESSION:DISPLAY-TYPE = "GUI":U THEN
          HIDDEN             = YES
          TITLE              = "Loading Unloading"
          COLUMN             = 1.72
-         ROW                = 1.27
+         ROW                = 1
          HEIGHT             = 26.46
          WIDTH              = 144
          MAX-HEIGHT         = 26.46
@@ -785,11 +785,15 @@ DO:
         FOR EACH tt-ldunld.
             FIND FIRST itms WHERE itms.itmID = tt-ldunld.itmID EXCLUSIVE-LOCK NO-ERROR.
 
-            stockSum = (itms.stockP + (itms.stockC * itms.unitsPerCase) + tt-ldunld.GRST ).
-            loadSum  = (tt-ldunld.LDP +(tt-ldunld.LDC * itms.unitsPerCase)).
+            stockSum = itms.stockP + (itms.stockC * itms.unitsPerCase).
+            loadSum  = tt-ldunld.LDP +(tt-ldunld.LDC * itms.unitsPerCase).
 
-            itms.stockP = (stockSum - loadSum) MODULO itms.unitsPerCase.
-            itms.stockC = (stockSum - loadSum) / itms.unitsPerCase.
+            itms.stockP = ((stockSum - loadSum)) MODULO itms.unitsPerCase.
+            itms.stockC = ((stockSum - loadSum)) / itms.unitsPerCase.
+
+            itms.stockP = itms.stockP + tt-ldunld.ULP.
+            itms.stockC = itms.stockC + tt-ldunld.ULC.
+
 
             RELEASE itms.
         END.
@@ -1975,15 +1979,15 @@ DEFINE VARIABLE tempBSC AS INTEGER     NO-UNDO.
 DEFINE VARIABLE tempBSP AS INTEGER     NO-UNDO.
 DEFINE VARIABLE Bil_Date AS DATE     NO-UNDO.
 DEFINE VARIABLE tempDate AS DATE     NO-UNDO INIT 01/01/2013.
-DEFINE VARIABLE lastBSDate AS DATE     NO-UNDO.
+/* DEFINE VARIABLE lastBSDate AS DATE     NO-UNDO. */
 
     Bil_Date = calendr:VALUE.
         
-    FOR EACH tt-lorryStock WHERE tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate < Bil_Date.
-        ACCUMULATE tt-lorryStock.crDate (MAX).
-    END.
+/*     FOR EACH tt-lorryStock WHERE tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate < Bil_Date. */
+/*         ACCUMULATE tt-lorryStock.crDate (MAX).                                                     */
+/*     END.                                                                                           */
 
-    lastBSDate = ACCUM MAX tt-lorryStock.crDate.
+/*     lastBSDate = ACCUM MAX tt-lorryStock.crDate. */
 
     FIND FIRST paramtrs WHERE paramtrs.NAME = "lastLorryStockID".
     IF AVAILABLE paramtrs THEN
@@ -2018,19 +2022,22 @@ DEFINE VARIABLE lastBSDate AS DATE     NO-UNDO.
             tt-ldunld.PerCase = tt-itms.unitsPerCase.
             tt-ldunld.SortID  = tt-itms.SortID.
     
-            FIND FIRST tt-lorryStock WHERE tt-lorryStock.itmID = tt-itms.itmID AND tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate = lastBSDate NO-LOCK NO-ERROR.
-                IF AVAILABLE tt-lorryStock THEN
-                DO:
-                    tt-ldunld.BSC     = tt-lorryStock.ULC.
-                    tt-ldunld.BSP     = tt-lorryStock.ULP.
-                END.
-                ELSE
-                DO:
-                    tt-ldunld.BSC     = 0.
-                    tt-ldunld.BSP     = 0.
-                END.
-            RELEASE lorryStock.
+/*             FIND FIRST tt-lorryStock WHERE tt-lorryStock.itmID = tt-itms.itmID AND tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate = lastBSDate NO-LOCK NO-ERROR. */
+/*                 IF AVAILABLE tt-lorryStock THEN                                                                                                                         */
+/*                 DO:                                                                                                                                                     */
+/*                     tt-ldunld.BSC     = tt-lorryStock.ULC.                                                                                                              */
+/*                     tt-ldunld.BSP     = tt-lorryStock.ULP.                                                                                                              */
+/*                 END.                                                                                                                                                    */
+/*                 ELSE                                                                                                                                                    */
+/*                 DO:                                                                                                                                                     */
+/*                     tt-ldunld.BSC     = 0.                                                                                                                              */
+/*                     tt-ldunld.BSP     = 0.                                                                                                                              */
+/*                 END.                                                                                                                                                    */
+/*             RELEASE lorryStock.                                                                                                                                         */
 
+            tt-ldunld.BSC     = 0.
+            tt-ldunld.BSP     = 0.
+            
             tt-ldunld.GRRD    = cntGRRD.
             tt-ldunld.GRST    = cntGRST.
     
@@ -2352,10 +2359,14 @@ lastBSDate = Bil_Date - 1.
             FIND FIRST lorryStock WHERE lorryStock.itmID = tt-ldunld.itmID AND lorryStock.VehID = cmbVeh AND lorryStock.crDate = lastBSDate NO-LOCK. 
                 IF AVAILABLE lorryStock THEN
                 DO:
-                    tt-ldunld.BSC     = lorryStock.ULC.
-                    tt-ldunld.BSP     = lorryStock.ULP.
-                    tt-ldunld.RDC     = (lorryStock.ULC + tt-ldunld.LDC) - tt-ldunld.ULC.
-                    tt-ldunld.RDP     = (lorryStock.ULP + tt-ldunld.LDP) - tt-ldunld.ULP.
+/*                     tt-ldunld.BSC     = lorryStock.ULC. */
+/*                     tt-ldunld.BSP     = lorryStock.ULP. */
+/*                     tt-ldunld.RDC     = (lorryStock.ULC + tt-ldunld.LDC) - tt-ldunld.ULC. */
+/*                     tt-ldunld.RDP     = (lorryStock.ULP + tt-ldunld.LDP) - tt-ldunld.ULP. */
+                    tt-ldunld.BSC     = 0.
+                    tt-ldunld.BSP     = 0.
+                    tt-ldunld.RDC     = tt-ldunld.LDC - tt-ldunld.ULC.
+                    tt-ldunld.RDP     = tt-ldunld.LDP - tt-ldunld.ULP.
                 END.
                 ELSE
                 DO:
@@ -2398,16 +2409,16 @@ DEFINE VARIABLE tempBSC AS INTEGER     NO-UNDO.
 DEFINE VARIABLE tempBSP AS INTEGER     NO-UNDO.
 DEFINE VARIABLE Bil_Date AS DATE     NO-UNDO.
 DEFINE VARIABLE tempDate AS DATE     NO-UNDO INIT 01/01/2013.
-DEFINE VARIABLE lastBSDate AS DATE     NO-UNDO.
+/* DEFINE VARIABLE lastBSDate AS DATE     NO-UNDO. */
 
     Bil_Date = calendr:VALUE.
         
-    FOR EACH tt-lorryStock WHERE tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate < Bil_Date.
-        ACCUMULATE tt-lorryStock.crDate (MAX).
-    END.
-
-    lastBSDate = ACCUM MAX tt-lorryStock.crDate.
-
+/*     FOR EACH tt-lorryStock WHERE tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate < Bil_Date. */
+/*         ACCUMULATE tt-lorryStock.crDate (MAX).                                                     */
+/*     END.                                                                                           */
+/*                                                                                                    */
+/*     lastBSDate = ACCUM MAX tt-lorryStock.crDate.                                                   */
+/*                                                                                                    */
     RUN ttBind.
 
     FIND FIRST paramtrs WHERE paramtrs.NAME = "lastLorryStockID".
@@ -2434,18 +2445,21 @@ DEFINE VARIABLE lastBSDate AS DATE     NO-UNDO.
             FIND FIRST tt-ldunld WHERE tt-ldunld.itmID = tt-itms.itmID.
             IF AVAILABLE tt-ldunld THEN
             DO:
-                FIND FIRST tt-lorryStock WHERE tt-lorryStock.itmID = tt-ldunld.itmID AND tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate = lastBSDate NO-ERROR. 
-                    IF AVAILABLE tt-lorryStock THEN
-                    DO:
-                        tt-ldunld.BSC     = tt-lorryStock.ULC.
-                        tt-ldunld.BSP     = tt-lorryStock.ULP.
-                    END.
-                    ELSE
-                    DO:
-                        tt-ldunld.BSC     = 0.
-                        tt-ldunld.BSP     = 0.
-                    END.    
-                RELEASE tt-lorryStock.
+/*                 FIND FIRST tt-lorryStock WHERE tt-lorryStock.itmID = tt-ldunld.itmID AND tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate = lastBSDate NO-ERROR. */
+/*                     IF AVAILABLE tt-lorryStock THEN                                                                                                                   */
+/*                     DO:                                                                                                                                               */
+/*                         tt-ldunld.BSC     = tt-lorryStock.ULC.                                                                                                        */
+/*                         tt-ldunld.BSP     = tt-lorryStock.ULP.                                                                                                        */
+/*                     END.                                                                                                                                              */
+/*                     ELSE                                                                                                                                              */
+/*                     DO:                                                                                                                                               */
+/*                         tt-ldunld.BSC     = 0.                                                                                                                        */
+/*                         tt-ldunld.BSP     = 0.                                                                                                                        */
+/*                     END.                                                                                                                                              */
+/*                 RELEASE tt-lorryStock.                                                                                                                                */
+
+                tt-ldunld.BSC     = 0.  
+                tt-ldunld.BSP     = 0.  
 
                 tt-ldunld.Excess = 0.
                 tt-ldunld.SHORT  = 0.
@@ -2483,19 +2497,22 @@ DEFINE VARIABLE lastBSDate AS DATE     NO-UNDO.
                 tt-ldunld.PerCase = tt-itms.unitsPerCase.
                 tt-ldunld.SortID  = tt-itms.SortID.
         
-                FIND FIRST tt-lorryStock WHERE tt-lorryStock.itmID = tt-itms.itmID AND tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate = lastBSDate NO-LOCK NO-ERROR.
-                    IF AVAILABLE tt-lorryStock THEN
-                    DO:
-                        tt-ldunld.BSC     = tt-lorryStock.ULC.
-                        tt-ldunld.BSP     = tt-lorryStock.ULP.
-                    END.
-                    ELSE
-                    DO:
-                        tt-ldunld.BSC     = 0.
-                        tt-ldunld.BSP     = 0.
-                    END.
-                RELEASE tt-lorryStock.
+/*                 FIND FIRST tt-lorryStock WHERE tt-lorryStock.itmID = tt-itms.itmID AND tt-lorryStock.VehID = cmbVeh AND tt-lorryStock.crDate = lastBSDate NO-LOCK NO-ERROR. */
+/*                     IF AVAILABLE tt-lorryStock THEN                                                                                                                         */
+/*                     DO:                                                                                                                                                     */
+/*                         tt-ldunld.BSC     = tt-lorryStock.ULC.                                                                                                              */
+/*                         tt-ldunld.BSP     = tt-lorryStock.ULP.                                                                                                              */
+/*                     END.                                                                                                                                                    */
+/*                     ELSE                                                                                                                                                    */
+/*                     DO:                                                                                                                                                     */
+/*                         tt-ldunld.BSC     = 0.                                                                                                                              */
+/*                         tt-ldunld.BSP     = 0.                                                                                                                              */
+/*                     END.                                                                                                                                                    */
+/*                 RELEASE tt-lorryStock.                                                                                                                                      */
     
+                tt-ldunld.BSC     = 0.  
+                tt-ldunld.BSP     = 0.  
+
                 tt-ldunld.GRRD    = cntGRRD.
                 tt-ldunld.GRST    = cntGRST.
         
