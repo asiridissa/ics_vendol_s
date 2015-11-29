@@ -298,7 +298,7 @@ END PROCEDURE.
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE printEmpty C-Win 
 PROCEDURE printEmpty :
 DEFINE VARIABLE id AS INTEGER     NO-UNDO INIT 0.
-OUTPUT TO VALUE("E:\ICS\bin\print\Spot_Stock_Test_.txt").
+OUTPUT TO VALUE("E:\ICS_Shaw\bin\print\Spot_Stock_Test_.txt").
     PUT UNFORMAT "No|Product|Weight|Van C|Van P|Stock C|Stock P|Total P|Buying Price|Amount|Selling Price|Amount|" SKIP. 
         FOR EACH itms WHERE (stockP + stockC + BSC + BSP) > 0 BY itms.SortID.
            PUT UNFORMAT STRING(id + 1) + "|".
@@ -308,8 +308,8 @@ OUTPUT TO VALUE("E:\ICS\bin\print\Spot_Stock_Test_.txt").
         END.
     PUT UNFORMAT "|Total|" SKIP.
   OUTPUT CLOSE.
-  DOS SILENT START VALUE("E:\ICS\bin\print\Spot_Stock_Test_.bat").
-  DOS SILENT START VALUE("E:\ICS\bin\print\Spot_Stock_Test_.xlsm").
+  DOS SILENT START VALUE("E:\ICS_Shaw\bin\print\Spot_Stock_Test_.bat").
+  DOS SILENT START VALUE("E:\ICS_Shaw\bin\print\Spot_Stock_Test_.xlsm").
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */
@@ -337,7 +337,7 @@ DEFINE VARIABLE tolAmountSell  AS INTEGER     NO-UNDO.
 DEFINE VARIABLE lastBSDate AS DATE        NO-UNDO.
 
 
-OUTPUT TO VALUE("E:\ICS\bin\print\Spot_Stock_Test.txt").
+OUTPUT TO VALUE("E:\ICS_Shaw\bin\print\Spot_Stock_Test.txt").
 
     PUT UNFORMAT "No|Product|Weight|Van C|Van P|Stock C|Stock P|Total P|Buying Price|Amount|Selling Price|Amount|" SKIP. 
 
@@ -400,8 +400,8 @@ OUTPUT TO VALUE("E:\ICS\bin\print\Spot_Stock_Test.txt").
 
   OUTPUT CLOSE.
 
-  DOS SILENT START VALUE("E:\ICS\bin\print\Spot_Stock_Test.bat").
-  DOS SILENT START VALUE("E:\ICS\bin\print\Spot_Stock_Test.xlsm").
+  DOS SILENT START VALUE("E:\ICS_Shaw\bin\print\Spot_Stock_Test.bat").
+  DOS SILENT START VALUE("E:\ICS_Shaw\bin\print\Spot_Stock_Test.xlsm").
 
 END PROCEDURE.
 

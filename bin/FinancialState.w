@@ -110,10 +110,10 @@ DEFINE TEMP-TABLE tt-transactionLastDay
     ~{&OPEN-QUERY-brw}
 
 /* Standard List Definitions                                            */
-&Scoped-Define ENABLED-OBJECTS filTotal filTotalFissu filTotalCash RECT-1 ~
-RECT-4 radTimePeriod cmbVeh btnView filTotalDisc filTotalExp filTotalCredit ~
-filValue filTotalDam filTotalCheque btnPrint filToCollect filTotalGr ~
-filTotalVarience brw 
+&Scoped-Define ENABLED-OBJECTS RECT-1 RECT-4 filTotal filTotalFissu ~
+filTotalCash radTimePeriod cmbVeh btnView filTotalDisc filTotalExp ~
+filTotalCredit filValue filTotalDam filTotalCheque btnPrint filToCollect ~
+filTotalGr filTotalVarience brw 
 &Scoped-Define DISPLAYED-OBJECTS filTotal filTotalFissu filTotalCash ~
 radTimePeriod cmbVeh filTotalDisc filTotalExp filTotalCredit filValue ~
 filTotalDam filTotalCheque filToCollect filTotalGr filTotalVarience 
@@ -303,10 +303,10 @@ DEFINE FRAME DEFAULT-FRAME
      filTotalGr AT ROW 3.58 COL 98.72 COLON-ALIGNED WIDGET-ID 258
      filTotalVarience AT ROW 3.58 COL 126 COLON-ALIGNED WIDGET-ID 282
      brw AT ROW 4.5 COL 1.43 WIDGET-ID 200
-     "To:" VIEW-AS TEXT
-          SIZE 3.14 BY .62 AT ROW 3.42 COL 5.57 WIDGET-ID 274
      "From:" VIEW-AS TEXT
           SIZE 5 BY .62 AT ROW 2.5 COL 3.43 WIDGET-ID 254
+     "To:" VIEW-AS TEXT
+          SIZE 3.14 BY .62 AT ROW 3.42 COL 5.57 WIDGET-ID 274
      RECT-1 AT ROW 1.23 COL 1.57 WIDGET-ID 260
      RECT-4 AT ROW 1.23 COL 49.57 WIDGET-ID 276
     WITH 1 DOWN NO-BOX KEEP-TAB-ORDER OVERLAY 
@@ -476,7 +476,7 @@ DO:
     DO:
         DEFINE VARIABLE tempCount AS INTEGER     NO-UNDO.
     
-        OUTPUT TO VALUE("E:\ICS_Vendol\bin\print\TransactionReport.txt").
+        OUTPUT TO VALUE("E:\ICS_Shaw\bin\print\TransactionReport.txt").
             
             CASE radTimePeriod:
                 WHEN "Custom" THEN
@@ -559,8 +559,8 @@ DO:
 
         OUTPUT CLOSE.
         
-        DOS SILENT START VALUE("E:\ICS_Vendol\bin\print\TransactionReport.bat").
-        DOS SILENT START excel VALUE("E:\ICS_Vendol\bin\print\TransactionReport.xlsx").
+        DOS SILENT START VALUE("E:\ICS_Shaw\bin\print\TransactionReport.bat").
+        DOS SILENT START excel VALUE("E:\ICS_Shaw\bin\print\TransactionReport.xlsx").
     END.
 
     {&SELF-NAME}:LABEL = "Print".
@@ -1360,7 +1360,7 @@ PROCEDURE enable_UI :
           filTotalExp filTotalCredit filValue filTotalDam filTotalCheque 
           filToCollect filTotalGr filTotalVarience 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
-  ENABLE filTotal filTotalFissu filTotalCash RECT-1 RECT-4 radTimePeriod cmbVeh 
+  ENABLE RECT-1 RECT-4 filTotal filTotalFissu filTotalCash radTimePeriod cmbVeh 
          btnView filTotalDisc filTotalExp filTotalCredit filValue filTotalDam 
          filTotalCheque btnPrint filToCollect filTotalGr filTotalVarience brw 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.

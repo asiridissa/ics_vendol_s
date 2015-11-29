@@ -449,7 +449,7 @@ DEFINE INPUT  PARAMETER tempDate AS DATE        NO-UNDO.
 DEFINE INPUT  PARAMETER tempVeh AS INTEGER     NO-UNDO.
 DEFINE VARIABLE tempId AS INTEGER     NO-UNDO.
 
-OUTPUT TO VALUE ("E:\ICS_Vendol\bin\print\Daily_Bill_SummaryEmpty.txt").
+OUTPUT TO VALUE ("E:\ICS_Shaw\bin\print\Daily_Bill_SummaryEmpty.txt").
 
 RUN ttBind(tempDate,tempVeh).
 
@@ -486,8 +486,8 @@ FIND FIRST vehical WHERE vehical.ID = tempVeh NO-ERROR.
     PUT UNFORMAT "|   Date : " + STRING(tempDate) + "   Veh : " + STRING(vehical.veh#) + " " + vehical.descrip .
 
 OUTPUT CLOSE.
-DOS SILENT START VALUE("E:\ICS_Vendol\bin\print\Daily_Bill_SummaryEmpty.bat").
-DOS SILENT START excel VALUE("E:\ICS_Vendol\bin\print\Daily_Bill_SummaryEmpty.xls").
+DOS SILENT START VALUE("E:\ICS_Shaw\bin\print\Daily_Bill_SummaryEmpty.bat").
+DOS SILENT START excel VALUE("E:\ICS_Shaw\bin\print\Daily_Bill_SummaryEmpty.xls").
 
 END PROCEDURE.
 
@@ -504,7 +504,7 @@ DEFINE VARIABLE tempId AS INTEGER     NO-UNDO.
 
 RUN ttBind(tempDate,tempVeh).
 
-OUTPUT TO VALUE ("E:\ICS_Vendol\bin\print\Daily_Bill_Summary.txt").
+OUTPUT TO VALUE ("E:\ICS_Shaw\bin\print\Daily_Bill_Summary.txt").
 
 PUT UNFORMAT "ID|Product|Weight|Unit|".
 
@@ -579,8 +579,8 @@ PUT UNFORMAT "ID|Product|Weight|Unit|".
     PUT UNFORMAT "|   Date : " + STRING(tempDate) + "   Veh : " + STRING(vehical.veh#) + " " + vehical.descrip .
 OUTPUT CLOSE.
 
-DOS SILENT START VALUE("E:\ICS_Vendol\bin\print\Daily_Bill_Summary.bat").
-DOS SILENT START excel VALUE("E:\ICS_Vendol\bin\print\Daily_Bill_Summary.xlsm").
+DOS SILENT START VALUE("E:\ICS_Shaw\bin\print\Daily_Bill_Summary.bat").
+DOS SILENT START excel VALUE("E:\ICS_Shaw\bin\print\Daily_Bill_Summary.xlsm").
 
 END PROCEDURE.
 
@@ -594,7 +594,7 @@ DEFINE INPUT  PARAMETER tempDate AS DATE        NO-UNDO.
 DEFINE INPUT  PARAMETER tempVeh AS INTEGER     NO-UNDO.
 DEFINE VARIABLE tempId AS INTEGER     NO-UNDO.
 
-OUTPUT TO VALUE ("E:\ICS_Vendol\bin\print\Daily_Bill_SummaryEmpty.txt").
+OUTPUT TO VALUE ("E:\ICS_Shaw\bin\print\Daily_Bill_SummaryEmpty.txt").
 
 tempId = 0.
 
@@ -622,8 +622,8 @@ FIND FIRST vehical WHERE vehical.ID = tempVeh NO-ERROR.
     IF AVAILABLE vehical THEN 
     PUT UNFORMAT SKIP "|    Date : " + STRING(tempDate) + "   Veh : " + STRING(vehical.veh#) + " " + vehical.descrip .
 OUTPUT CLOSE.
-DOS SILENT START VALUE("E:\ICS_Vendol\bin\print\Daily_Bill_SummaryEmpty.bat").
-DOS SILENT START excel VALUE("E:\ICS_Vendol\bin\print\Daily_Bill_SummaryEmpty.xls").
+DOS SILENT START VALUE("E:\ICS_Shaw\bin\print\Daily_Bill_SummaryEmpty.bat").
+DOS SILENT START excel VALUE("E:\ICS_Shaw\bin\print\Daily_Bill_SummaryEmpty.xls").
 
 END PROCEDURE.
 

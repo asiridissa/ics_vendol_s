@@ -269,7 +269,7 @@ DO:
         ASSIGN pwrd = ENCODE(fillPwrdNew2).
         APPLY "WINDOW-CLOSE":U TO {&WINDOW-NAME}.
         RUN logger.r("Password changed to" + STRING(ENCODE(fillPwrdNew2))).
-        RUN VALUE("menu.r").
+        RUN VALUE("tree.r").
         QUIT.
     END.
     ELSE

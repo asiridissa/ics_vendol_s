@@ -462,7 +462,7 @@ DO:
     MESSAGE "Conferm to print?" VIEW-AS ALERT-BOX QUESTION BUTTONS YES-NO UPDATE yn AS LOGICAL.
     IF yn = YES THEN
     DO:
-        OUTPUT TO VALUE("E:\ICS\bin\print\Collection_Report.txt"). 
+        OUTPUT TO VALUE("E:\ICS_Shaw\bin\print\Collection_Report.txt"). 
 
         PUT UNFORMAT "|||||From : " + STRING(fromD,"99/99/9999") + " To : "  + STRING(toD,"99/99/9999") +  "    By user : " + session_UsersName SKIP. 
         PUT UNFORMAT "|No|Date|Bill No.|Customer|Bill Total|Paid|Collection|Days" SKIP. 
@@ -537,14 +537,14 @@ DO:
 
         OUTPUT CLOSE.                                                                                                                  
 
-        OUTPUT TO VALUE("E:\ICS\bin\print\CollectionChart.txt").
+        OUTPUT TO VALUE("E:\ICS_Shaw\bin\print\CollectionChart.txt").
 
         PUT UNFORMAT STRING(chartString).
 
         OUTPUT CLOSE.
 
-        DOS SILENT START VALUE("E:\ICS\bin\print\CollectionReport.bat").       
-        DOS SILENT START excel VALUE("E:\ICS\bin\print\CollectionReport.xlsx").
+        DOS SILENT START VALUE("E:\ICS_Shaw\bin\print\CollectionReport.bat").       
+        DOS SILENT START excel VALUE("E:\ICS_Shaw\bin\print\CollectionReport.xlsx").
 
     END.
 END.
